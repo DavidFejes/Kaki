@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Felhőalapú Kaki Napló</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+
+    <!-- === BEJELENTKEZÉSI SZEKCIÓ === -->
+    <div class="auth-container">
+        <button id="auth-btn">Bejelentkezés Google-lel</button>
+        <div id="user-display"></div>
+    </div>
+    
+    <!-- === FŐ ALKALMAZÁS KONTÉNER (alapból rejtve) === -->
+    <div class="container" style="display: none;">
+        <h1>A Kaki Napló 💩</h1>
+        
+        <div class="log-section">
+            <button id="log-btn">Esemény Rögzítése</button>
+        </div>
+
+        <div class="dashboard">
+            <div class="stat-card">
+                <div class="stat-label">Mai Számláló</div>
+                <div class="stat-value" id="today-count">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Heti Összesítés</div>
+                <div class="stat-value" id="weekly-total">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Napi Átlag</div>
+                <div class="stat-value" id="daily-avg">0.0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Összes Bejegyzés</div>
+                <div class="stat-value" id="all-time-total">0</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h2>Heti Aktivitás</h2>
+            <canvas id="log-chart"></canvas>
+        </div>
+
+        <div class="log-list-container">
+            <h2>Legutóbbi Bejegyzések</h2>
+            <ul id="log-list">
+                <!-- A bejegyzések ide kerülnek dinamikusan -->
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Chart.js a grafikonhoz -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Az alkalmazás logikája, ami már tartalmazza a Firebase inicializálást -->
+    <script type="module" src="script.js"></script>
+
+</body>
+</html>
