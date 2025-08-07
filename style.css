@@ -101,3 +101,4 @@ input[type=number] { -moz-appearance: textfield; }
 #map-container { height: 500px; background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); z-index: 1; }
 .leaflet-control-attribution { background-color: rgba(45,35,30,0.8) !important; color: var(--text-secondary) !important; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--bg-color); color: var(--text-primary); }
+#loader {display: flex;justify-content: center; align-items: center;height: 100vh; /* Teljes képernyő magasság */ font-size: 1.5em;color: var(--text-secondary);}

@@ -52,13 +52,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     onAuthStateChanged(auth, user => {
         currentUser = user;
+        
+        // A töltőképernyő elrejtése, mert a Firebase végzett.
+        loader.style.display = 'none';
+        
+        // A felső sáv megjelenítése, mert már tudjuk, be vagyunk-e jelentkezve.
+        topBar.style.display = 'flex';
+
         if (user) {
+            // BEJELENTKEZETT ÁLLAPOT
             mainContainer.style.display = 'block';
-            loadUserData();
+            loadUserData(); // Ez a függvény már magában hívja a setLanguage-et
         } else {
+            // KIJELENTKEZETT ÁLLAPOT
             mainContainer.style.display = 'none';
             if (map) { map.remove(); map = null; }
-            setLanguage(currentLanguage); // Nyelv beállítása kijelentkezés után
+            setLanguage(currentLanguage); // Csak a kijelentkezett UI nyelvi beállítása
         }
     });
 
@@ -80,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     filterDescription.addEventListener('input', renderLogListPage);
     filterResetBtn.addEventListener('click', () => { filterDateStart.value = ''; filterDateEnd.value = ''; filterRating.value = 0; filterDescription.value = ''; renderLogListPage(); });
     
-    async function loadUserData() { if (!currentUser) return; const dR = doc(db, 'users', currentUser.uid); try { const dS = await getDoc(dR); if (dS.exists()) { const data = dS.data(); logs = data.poopLogs || []; settings = { ...{ businessMode: false, hourlySalary: 0 }, ...data.settings }; if (logs.length > 0 && typeof logs[0] === 'number') { logs = logs.map(t => ({ timestamp: t, duration: 300, rating: 3, description: translations.hu.log_description_na, isWork: false, location: null })); await saveData("MIGRACIO"); } } else { logs = []; settings = { businessMode: false, hourlySalary: 0 }; } setLanguage(currentLanguage); } catch (e) { console.error("Adatbetöltési hiba:", e); } }
+    async function loadUserData() { if (!currentUser) return; const dR = doc(db, 'users', currentUser.uid); try { const dS = await getDoc(dR); if (dS.exists()) { const data = dS.data(); logs = data.poopLogs || []; settings = { ...{ businessMode: false, hourlySalary: 0 }, ...data.settings }; if (logs.length > 0 && typeof logs[0] === 'number') { logs = logs.map(t => ({ timestamp: t, duration: 300, rating: 3,  description: translations[currentLanguage].log_description_na, isWork: false, location: null })); await saveData("MIGRACIO"); } } else { logs = []; settings = { businessMode: false, hourlySalary: 0 }; } setLanguage(currentLanguage); } catch (e) { console.error("Adatbetöltési hiba:", e); } }
     async function saveData(src = "ismeretlen") { if (!currentUser) return; const dR = doc(db, 'users', currentUser.uid); try { await setDoc(dR, { poopLogs: logs, settings }); console.log(`[${src}] Mentés OK.`); } catch (e) { console.error(`[${src}] Mentés Hiba:`, e); } }
     function resetLogForm() { logDurationInput.value = "5"; logDescriptionInput.value = ""; logRatingInput.value = "3"; isWorkLogCheckbox.checked = false; currentLogLocation = null; workLogGroup.style.display = settings.businessMode ? 'block' : 'none'; locationStatus.textContent = translations[currentLanguage].location_fetching; locationStatus.style.color = 'var(--text-secondary)'; }
     function getCurrentLocation() { if ('geolocation' in navigator) navigator.geolocation.getCurrentPosition(p => { currentLogLocation = { lat: p.coords.latitude, lng: p.coords.longitude }; locationStatus.textContent = translations[currentLanguage].location_fetching_success; locationStatus.style.color = 'lightgreen'; }, () => { currentLogLocation = null; locationStatus.textContent = translations[currentLanguage].location_fetching_error; locationStatus.style.color = 'orange'; }); else { locationStatus.textContent = translations[currentLanguage].location_fetching_unsupported; locationStatus.style.color = 'orange'; } }
@@ -93,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function initMap() { if (mapContainer && !map) { map = L.map('map-container').setView([47.4979, 19.0402], 7); L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy;OSM &copy;CARTO', maxZoom: 20 }).addTo(map); } if (map) renderAllMarkers(); }
     function renderAllMarkers() { if (!map) return; map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); }); logs.forEach(l => { if (l.location) { const d = new Date(l.timestamp), pC = `<b>${d.toLocaleString(currentLanguage, { year: 'numeric', month: 'short', day: 'numeric' })}</b><br>${l.description || translations[currentLanguage].log_description_na}`; L.marker([l.location.lat, l.location.lng]).addTo(map).bindPopup(pC); } }); }
     function applySettingsToUI() { businessModeToggle.checked = settings.businessMode; hourlySalaryInput.value = settings.hourlySalary || ''; salaryInputGroup.style.display = settings.businessMode ? 'block' : 'none'; earningsCard.style.display = settings.businessMode ? 'grid' : 'none'; }
+    
     
     setLanguage(currentLanguage);
 });
