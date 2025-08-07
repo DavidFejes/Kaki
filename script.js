@@ -494,4 +494,37 @@ fullLogListEl.addEventListener('click', async (e) => {
     // Frissítés
     renderDashboard();
     initMap(); // Újrarajzolja a térképet markerek nélkül
+
+// A saveLogBtn eseménykezelőjébe:
+saveLogBtn.addEventListener('click', async () => {
+    console.log("1. Rögzítés gomb megnyomva.");
+    const newLog = {
+        // ... (a meglévő kódod)
+    };
+    logs.push(newLog);
+    console.log("2. Új adat hozzáadva a listához, a lista most:", logs);
+    
+    await saveData();
+    
+    console.log("4. A mentési folyamat után a renderelés következik.");
+    // ... (a meglévő kódod)
+});
+
+// A saveData függvénybe:
+async function saveData() {
+    console.log("3. A saveData() függvény elindult, hogy mentse az adatokat a felhőbe.");
+    if (!currentUser) {
+        console.error("KRITIKUS HIBA: A mentés megszakadt, mert a currentUser null!");
+        return;
+    }
+    
+    const docRef = doc(db, 'users', currentUser.uid); 
+    
+    try {
+        await setDoc(docRef, { poopLogs: logs, settings: settings });
+        console.log("SIKERES MENTÉS! Az adatok a Firebase-ben vannak.");
+    } catch (error) {
+        console.error("Hiba az adatok Firebase-be való írásakor: ", error);
+    }
+}
 });
