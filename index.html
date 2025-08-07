@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Felhőalapú Kaki Napló</title>
+    <title>Felhőalapú Kaki Napló v3.5</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -42,8 +42,9 @@
                 <div class="stat-card"><div class="stat-label">Heti Összesítés</div><div class="stat-value" id="weekly-total">0</div></div>
                 <div class="stat-card"><div class="stat-label">Napi Átlag</div><div class="stat-value" id="daily-avg">0.0</div></div>
                 <div class="stat-card"><div class="stat-label">Összes Bejegyzés</div><div class="stat-value" id="all-time-total">0</div></div>
-                <div class="stat-card" id="earnings-card" style="display:none;"><div class="stat-label">"Kereset"</div><div class="stat-value" id="work-earnings">0 Ft</div></div>
-                <div class="stat-card"><div class="stat-label">Csúcs Nap</div><div class="stat-value" id="peak-day">-</div></div>
+                <!-- KÁRTYÁK MÓDOSÍTÁSA A 'double-width' OSZTÁLLYAL -->
+                <div class="stat-card double-width" id="earnings-card" style="display:none;"><div class="stat-label">"Kereset" a munkahelyi szünetekből</div><div class="stat-value" id="work-earnings">0 Ft</div></div>
+                <div class="stat-card double-width"><div class="stat-label">Csúcs Nap</div><div class="stat-value" id="peak-day">-</div></div>
             </div>
             <div class="chart-container">
                 <div class="chart-header">
@@ -60,6 +61,39 @@
         
         <div id="log-list-view" class="view-content">
             <h2>Összes bejegyzés</h2>
+            
+            <!-- A SZŰRŐSÁV ITT VAN -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label for="filter-date-start">Kezdődátum:</label>
+                    <input type="date" id="filter-date-start">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-date-end">Végdátum:</label>
+                    <input type="date" id="filter-date-end">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-rating">Min. Értékelés:</label>
+                    <select id="filter-rating">
+                        <option value="0">Mind</option>
+                        <option value="1">★☆☆☆☆</option>
+                        <option value="2">★★☆☆☆</option>
+                        <option value="3">★★★☆☆</option>
+                        <option value="4">★★★★☆</option>
+                        <option value="5">★★★★★</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-description">Keresés a leírásban:</label>
+                    <input type="text" id="filter-description" placeholder="Kulcsszó...">
+                </div>
+                <div class="filter-group">
+                    <button id="filter-reset-btn">Szűrők Törlése</button>
+                </div>
+            </div>
+
+            <p id="log-list-summary">Találatok: <span id="log-list-count">0</span></p>
+
             <ul id="full-log-list"></ul>
         </div>
 
@@ -93,7 +127,7 @@
         </div>
     </div>
 
-    <!-- === KÖNYVTÁRAK ÉS A MI SZKRIPTÜNK (FONTOS: a Body végén!) === -->
+    <!-- === KÖNYVTÁRAK ÉS A MI SZKRIPTÜNK === -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="./script.js"></script>
