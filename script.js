@@ -1,27 +1,31 @@
 // =================================================================
-// || KAKI NAPLÓ v6.1 - HOISTING JAVÍTVA, VÉGLEGES STRUKTÚRA      ||
+// || KAKI NAPLÓ v7.0 - A VÉGSŐ JAVÍTÁS                        ||
 // =================================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged, signOut, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// === TELJES KONFIGURÁCIÓ ===
 const firebaseConfig = { apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI", authDomain: "kaki-b14a4.firebaseapp.com", projectId: "kaki-b14a4", storageBucket: "kaki-b14a4.appspot.com", messagingSenderId: "123120220357", appId: "1:123120220357:web:3386a6b8ded6c4ec3798ac" };
 const translations = {
     hu: { loading: "Alkalmazás betöltése...", page_title: "Felhőalapú Kaki Napló", main_title: "A Kaki Napló 💩", login_button: "Bejelentkezés Google-lel", logout_button: "Kijelentkezés", dashboard_view_btn: "Irányítópult", log_list_view_btn: "Részletes Napló", map_view_btn: "Térkép", log_new_event_btn: "Új Esemény Rögítése", stat_today: "Mai Számláló", stat_weekly: "Heti Összesítés", stat_daily_avg: "Napi Átlag", stat_total: "Összes Bejegyzés", stat_earnings: '"Kereset" a munkahelyi szünetekből', stat_peak_day: "Csúcs Nap", chart_title: "Heti Aktivitás", week_display: "{start} - {end}", current_week: "Aktuális hét", log_list_title: "Összes bejegyzés", filter_start_date: "Kezdődátum:", filter_end_date: "Végdátum:", filter_rating: "Értékelés:", filter_rating_all: "Mind", filter_description: "Keresés a leírásban:", filter_description_placeholder: "Kulcsszó...", filter_reset_btn: "Szűrők Törlése", filter_results: "Találatok:", map_title: "Események Térképe", settings_title: "Beállítások", settings_business_mode: "Munkahelyi Mód", settings_hourly_wage: "Órabéred (Ft)", settings_hourly_wage_placeholder: "Pl. 3000", new_log_title: "Új esemény", new_log_duration: "Időtartam (perc)", new_log_description: "Leírás, jegyzetek", new_log_rating: "Értékelés (1-5)", new_log_is_work: "Munkahelyi esemény volt?", location_fetching: "Helyszín meghatározása...", save_btn: "Mentés", log_btn: "Rögzítés", welcome_message: "Üdv, {userName}!", location_fetching_success: "✅ Helyszín rögzítve!", location_fetching_error: "⚠️ Helyszín nem elérhető.", location_fetching_unsupported: "Helymeghatározás nem támogatott.", log_description_work: "Munkahelyi", log_description_na: "N/A", chart_days: ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'] },
     en: { loading: "Loading application...", page_title: "Cloud-Based Poop Log", main_title: "The Poop Log 💩", login_button: "Login with Google", logout_button: "Logout", dashboard_view_btn: "Dashboard", log_list_view_btn: "Detailed Log", map_view_btn: "Map", log_new_event_btn: "Log New Event", stat_today: "Today's Count", stat_weekly: "Weekly Total", stat_daily_avg: "Daily Average", stat_total: "All-Time Total", stat_earnings: '"Earnings" from work breaks', stat_peak_day: "Peak Day", chart_title: "Weekly Activity", week_display: "{start} - {end}", current_week: "Current week", log_list_title: "All Entries", filter_start_date: "Start Date:", filter_end_date: "End Date:", filter_rating: "Rating:", filter_rating_all: "All", filter_description: "Search in description:", filter_description_placeholder: "Keyword...", filter_reset_btn: "Reset Filters", filter_results: "Results:", map_title: "Map of Events", settings_title: "Settings", settings_business_mode: "Business Mode", settings_hourly_wage: "Your Hourly Wage ($)", settings_hourly_wage_placeholder: "e.g. 15", new_log_title: "New Event", new_log_duration: "Duration (minutes)", new_log_description: "Description, notes", new_log_rating: "Rating (1-5)", new_log_is_work: "Was this a work event?", location_fetching: "Fetching location...", save_btn: "Save", log_btn: "Log it", welcome_message: "Welcome, {userName}!", location_fetching_success: "✅ Location acquired!", location_fetching_error: "⚠️ Location not available.", location_fetching_unsupported: "Geolocation not supported.", log_description_work: "Work", log_description_na: "N/A", chart_days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Inicializálás ---
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-    // --- Alkalmazás Állapota (Belső Változók) ---
-    let currentUser = null;
+let appInitialized = false; // Zászló, ami megakadályozza a többszöri inicializálást
+
+// EZ A FÜGGVÉNY INDÍTJA BE A TELJES ALKALMAZÁST
+function initializeAppLogic(user) {
+    if (appInitialized) return; // Ha már fut, ne csináljon semmit
+    appInitialized = true;
+
+    // --- ALKALMAZÁS ÁLLAPOTA ---
+    let currentUser = user;
     let logs = [];
     let settings = { businessMode: false, hourlySalary: 0 };
     let currentLogLocation = null;
@@ -30,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let map;
     let poopChart;
     
-    // --- DOM Eleme Kigyűjtése ---
+    // --- DOM ELEMEK ---
     const loader = document.getElementById('loader'), topBar = document.querySelector('.top-bar'), authBtn = document.getElementById('auth-btn'),
           userDisplay = document.getElementById('user-display'), mainContainer = document.querySelector('.container'),
           viewSwitcher = document.querySelector('.view-switcher'), views = document.querySelectorAll('.view-content'),
@@ -52,45 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
           filterDateStart = document.getElementById('filter-date-start'), filterDateEnd = document.getElementById('filter-date-end'),
           filterRating = document.getElementById('filter-rating'), filterDescription = document.getElementById('filter-description'),
           filterResetBtn = document.getElementById('filter-reset-btn'), logListCount = document.getElementById('log-list-count');
-
-    // === AZ ALKALMAZÁS FŐ INDÍTÓJA (Authentication Figyelő) ===
-    onAuthStateChanged(auth, user => {
-        currentUser = user;
-        loader.style.display = 'none';
-        topBar.style.display = 'flex';
-
-        if (user) {
-            mainContainer.style.display = 'block';
-            loadUserData();
-        } else {
-            mainContainer.style.display = 'none';
-            if (map) { map.remove(); map = null; }
-            setLanguage(currentLanguage);
-        }
-    });
-    
-    // Kezeljük a redirectet, mielőtt bármit is csinálnánk.
-    getRedirectResult(auth).catch(e => console.error("Redirect Result Hiba:", e.message));
-
-    // === ESEMÉNYFIGYELŐK ===
-    authBtn.addEventListener('click', () => { if (currentUser) { signOut(auth); } else { signInWithRedirect(auth, provider); } });
-    langToggleBtn.addEventListener('click', () => setLanguage(currentLanguage === 'hu' ? 'en' : 'hu'));
-    openLogModalBtn.addEventListener('click', () => { resetLogForm(); getCurrentLocation(); logEntryModal.style.display = 'block'; });
-    saveLogBtn.addEventListener('click', async () => { const nL={timestamp:Date.now(),duration:(Number(logDurationInput.value)||5)*60,description:logDescriptionInput.value.trim(),rating:Number(logRatingInput.value),isWork:settings.businessMode&&isWorkLogCheckbox.checked,location:currentLogLocation};logs.push(nL);await saveData("GOMB_KATTINTAS");logEntryModal.style.display='none';renderEverything();});
-    settingsBtn.addEventListener('click', () => { settingsModal.style.display = 'block'; });
-    businessModeToggle.addEventListener('change', () => { salaryInputGroup.style.display = businessModeToggle.checked ? 'block' : 'none'; });
-    saveSettingsBtn.addEventListener('click', async () => { settings.businessMode=businessModeToggle.checked; settings.hourlySalary=Number(hourlySalaryInput.value)||0; await saveData("BEALLITASOK_MENTESE"); settingsModal.style.display='none'; applySettingsToUI(); renderDashboard();});
-    viewSwitcher.addEventListener('click', e => { if (e.target.classList.contains('view-btn')) { const t=e.target.dataset.view; document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active')); e.target.classList.add('active'); views.forEach(v => v.classList.toggle('active', v.id === t)); if (t==='map-view' && map) setTimeout(()=>map.invalidateSize(),10); }});
-    closeButtons.forEach(b => b.addEventListener('click', e => e.target.closest('.modal').style.display='none'));
-    window.addEventListener('click', e => { if (e.target.classList.contains('modal')) e.target.style.display = 'none'; });
-    fullLogListEl.addEventListener('click', async e => { const b=e.target.closest('.delete-btn'); if(!b) return; const t=Number(b.dataset.timestamp); logs = logs.filter(l => l.timestamp !== t); await saveData("ELEM_TORLESE"); renderEverything(); });
-    prevWeekBtn.addEventListener('click', () => { weeklyChartOffset--; renderDashboard(); });
-    nextWeekBtn.addEventListener('click', () => { if(weeklyChartOffset < 0) { weeklyChartOffset++; renderDashboard(); } });
-    [filterDateStart, filterDateEnd, filterRating].forEach(el => el.addEventListener('change', renderLogListPage));
-    filterDescription.addEventListener('input', renderLogListPage);
-    filterResetBtn.addEventListener('click', () => { filterDateStart.value=''; filterDateEnd.value=''; filterRating.value=0; filterDescription.value=''; renderLogListPage(); });
-    
-    // === FŐ FUNKCIÓK (function declaration-nel, hogy a hoisting működjön) ===
+          
+    // --- FÜGGVÉNYEK ---
     function setLanguage(lang) {
         currentLanguage = lang; localStorage.setItem('appLanguage', lang); document.documentElement.lang = lang;
         langToggleBtn.textContent = lang === 'hu' ? 'EN' : 'HU';
@@ -114,6 +81,55 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderAllMarkers() { if(!map)return; map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);}); logs.forEach(l=>{if(l.location){const d=new Date(l.timestamp),pC=`<b>${d.toLocaleString(currentLanguage,{year:'numeric',month:'short',day:'numeric'})}</b><br>${l.description || translations[currentLanguage].log_description_na}`;L.marker([l.location.lat,l.location.lng]).addTo(map).bindPopup(pC);}});};
     function applySettingsToUI() { businessModeToggle.checked = settings.businessMode; hourlySalaryInput.value = settings.hourlySalary || ''; salaryInputGroup.style.display = settings.businessMode ? 'block' : 'none'; earningsCard.style.display = settings.businessMode ? 'grid' : 'none'; };
     
-    // Alkalmazás nyelvének kezdeti beállítása
+    // --- UI INICIALIZÁLÁS ---
+    loader.style.display = 'none';
+    topBar.style.display = 'flex';
+    if (currentUser) {
+        mainContainer.style.display = 'block';
+        loadUserData();
+    } else {
+        mainContainer.style.display = 'none';
+    }
     setLanguage(currentLanguage);
-});
+
+    // --- ESEMÉNYFIGYELŐK HOZZÁADÁSA ---
+    authBtn.addEventListener('click', () => { if (currentUser) { signOut(auth); } else { signInWithRedirect(auth, provider); } });
+    langToggleBtn.addEventListener('click', () => setLanguage(currentLanguage === 'hu' ? 'en' : 'hu'));
+    openLogModalBtn.addEventListener('click', () => { resetLogForm(); getCurrentLocation(); logEntryModal.style.display = 'block'; });
+    saveLogBtn.addEventListener('click', async () => { const nL={timestamp:Date.now(),duration:(Number(logDurationInput.value)||5)*60,description:logDescriptionInput.value.trim(),rating:Number(logRatingInput.value),isWork:settings.businessMode&&isWorkLogCheckbox.checked,location:currentLogLocation};logs.push(nL);await saveData("GOMB_KATTINTAS");logEntryModal.style.display='none';renderEverything();});
+    settingsBtn.addEventListener('click', () => { settingsModal.style.display = 'block'; });
+    businessModeToggle.addEventListener('change', () => { salaryInputGroup.style.display = businessModeToggle.checked ? 'block' : 'none'; });
+    saveSettingsBtn.addEventListener('click', async () => { settings.businessMode=businessModeToggle.checked; settings.hourlySalary=Number(hourlySalaryInput.value)||0; await saveData("BEALLITASOK_MENTESE"); settingsModal.style.display='none'; applySettingsToUI(); renderDashboard();});
+    viewSwitcher.addEventListener('click', e => { if (e.target.classList.contains('view-btn')) { const t=e.target.dataset.view; document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active')); e.target.classList.add('active'); views.forEach(v => v.classList.toggle('active', v.id === t)); if (t==='map-view' && map) setTimeout(()=>map.invalidateSize(),10); }});
+    closeButtons.forEach(b => b.addEventListener('click', e => e.target.closest('.modal').style.display='none'));
+    window.addEventListener('click', e => { if (e.target.classList.contains('modal')) e.target.style.display = 'none'; });
+    fullLogListEl.addEventListener('click', async e => { const b=e.target.closest('.delete-btn'); if(!b) return; const t=Number(b.dataset.timestamp); logs = logs.filter(l => l.timestamp !== t); await saveData("ELEM_TORLESE"); renderEverything(); });
+    prevWeekBtn.addEventListener('click', () => { weeklyChartOffset--; renderDashboard(); });
+    nextWeekBtn.addEventListener('click', () => { if(weeklyChartOffset < 0) { weeklyChartOffset++; renderDashboard(); } });
+    [filterDateStart, filterDateEnd, filterRating].forEach(el => el.addEventListener('change', renderLogListPage));
+    filterDescription.addEventListener('input', renderLogListPage);
+    filterResetBtn.addEventListener('click', () => { filterDateStart.value=''; filterDateEnd.value=''; filterRating.value=0; filterDescription.value=''; renderLogListPage(); });
+}
+
+// === ALKALMAZÁS INDÍTÓ LOGIKÁJA ===
+document.addEventListener('DOMContentLoaded', () => {
+    // Csak a redirect feldolgozását várjuk meg
+    getRedirectResult(auth)
+        .catch(error => {
+            // Ezt a hibát gyakran kidobja, ha nincs redirect, ami normális. A lényeg, hogy lefusson.
+            console.warn("getRedirectResult hiba (ez lehet normális):", error.code);
+        })
+        .finally(() => {
+            // Amikor a redirect kész (akár sikerült, akár nem),
+            // elindítjuk a fő figyelőt, ami elindítja a teljes alkalmazást a VÉGLEGES felhasználói állapottal.
+            onAuthStateChanged(auth, user => {
+                // Csak egyszer inicializáljuk az alkalmazást.
+                if (!document.body.classList.contains('app-initialized')) {
+                    document.body.classList.add('app-initialized');
+                    initializeAppLogic(user);
+                }
+            }, (error) => {
+                 console.error("KRITIKUS AUTH HIBA:", error);
+            });
+        });
+})
