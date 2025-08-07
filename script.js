@@ -1,5 +1,5 @@
 // =================================================================
-// || KAKI NAPLÓ v7.0 - A VÉGSŐ JAVÍTÁS                        ||
+// || KAKI NAPLÓ v8.1 - VÉGRE Befejezve                        ||
 // =================================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -17,69 +17,42 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-let appInitialized = false; // Zászló, ami megakadályozza a többszöri inicializálást
+// Ez a függvény indítja el a teljes alkalmazást.
+function mainAppLogic(user) {
+    // Csak akkor indul el, ha még nem fut
+    if (document.body.classList.contains('app-initialized')) return;
+    document.body.classList.add('app-initialized');
 
-// EZ A FÜGGVÉNY INDÍTJA BE A TELJES ALKALMAZÁST
-function initializeAppLogic(user) {
-    if (appInitialized) return; // Ha már fut, ne csináljon semmit
-    appInitialized = true;
-
-    // --- ALKALMAZÁS ÁLLAPOTA ---
     let currentUser = user;
-    let logs = [];
-    let settings = { businessMode: false, hourlySalary: 0 };
-    let currentLogLocation = null;
-    let weeklyChartOffset = 0;
+    let logs = [], settings = {}, currentLogLocation = null, weeklyChartOffset = 0, map, poopChart;
     let currentLanguage = localStorage.getItem('appLanguage') || 'hu';
-    let map;
-    let poopChart;
     
-    // --- DOM ELEMEK ---
-    const loader = document.getElementById('loader'), topBar = document.querySelector('.top-bar'), authBtn = document.getElementById('auth-btn'),
-          userDisplay = document.getElementById('user-display'), mainContainer = document.querySelector('.container'),
-          viewSwitcher = document.querySelector('.view-switcher'), views = document.querySelectorAll('.view-content'),
-          openLogModalBtn = document.getElementById('open-log-modal-btn'), todayCountEl = document.getElementById('today-count'),
-          weeklyTotalEl = document.getElementById('weekly-total'), dailyAvgEl = document.getElementById('daily-avg'),
-          allTimeTotalEl = document.getElementById('all-time-total'), earningsCard = document.getElementById('earnings-card'),
-          workEarningsEl = document.getElementById('work-earnings'), peakDayEl = document.getElementById('peak-day'),
-          chartCanvas = document.getElementById('log-chart').getContext('2d'), prevWeekBtn = document.getElementById('prev-week-btn'),
-          nextWeekBtn = document.getElementById('next-week-btn'), weekDisplay = document.getElementById('week-display'),
-          fullLogListEl = document.getElementById('full-log-list'), mapContainer = document.getElementById('map-container'),
-          settingsBtn = document.getElementById('settings-btn'), langToggleBtn = document.getElementById('lang-toggle-btn'),
-          settingsModal = document.getElementById('settings-modal'), logEntryModal = document.getElementById('log-entry-modal'),
-          closeButtons = document.querySelectorAll('.close-btn'), businessModeToggle = document.getElementById('business-mode-toggle'),
-          salaryInputGroup = document.getElementById('salary-input-group'), hourlySalaryInput = document.getElementById('hourly-salary'),
-          saveSettingsBtn = document.getElementById('save-settings-btn'), saveLogBtn = document.getElementById('save-log-btn'),
-          logDurationInput = document.getElementById('log-duration'), logDescriptionInput = document.getElementById('log-description'),
-          logRatingInput = document.getElementById('log-rating'), workLogGroup = document.getElementById('work-log-group'),
-          isWorkLogCheckbox = document.getElementById('is-work-log'), locationStatus = document.getElementById('location-status'),
-          filterDateStart = document.getElementById('filter-date-start'), filterDateEnd = document.getElementById('filter-date-end'),
-          filterRating = document.getElementById('filter-rating'), filterDescription = document.getElementById('filter-description'),
-          filterResetBtn = document.getElementById('filter-reset-btn'), logListCount = document.getElementById('log-list-count');
-          
-    // --- FÜGGVÉNYEK ---
+    // --- DOM Eleme Kigyűjtése ---
+    const loader=document.getElementById('loader'),topBar=document.querySelector('.top-bar'),authBtn=document.getElementById('auth-btn'),userDisplay=document.getElementById('user-display'),mainContainer=document.querySelector('.container'),viewSwitcher=document.querySelector('.view-switcher'),views=document.querySelectorAll('.view-content'),openLogModalBtn=document.getElementById('open-log-modal-btn'),todayCountEl=document.getElementById('today-count'),weeklyTotalEl=document.getElementById('weekly-total'),dailyAvgEl=document.getElementById('daily-avg'),allTimeTotalEl=document.getElementById('all-time-total'),earningsCard=document.getElementById('earnings-card'),workEarningsEl=document.getElementById('work-earnings'),peakDayEl=document.getElementById('peak-day'),chartCanvas=document.getElementById('log-chart').getContext('2d'),prevWeekBtn=document.getElementById('prev-week-btn'),nextWeekBtn=document.getElementById('next-week-btn'),weekDisplay=document.getElementById('week-display'),fullLogListEl=document.getElementById('full-log-list'),mapContainer=document.getElementById('map-container'),settingsBtn=document.getElementById('settings-btn'),langToggleBtn=document.getElementById('lang-toggle-btn'),settingsModal=document.getElementById('settings-modal'),logEntryModal=document.getElementById('log-entry-modal'),closeButtons=document.querySelectorAll('.close-btn'),businessModeToggle=document.getElementById('business-mode-toggle'),salaryInputGroup=document.getElementById('salary-input-group'),hourlySalaryInput=document.getElementById('hourly-salary'),saveSettingsBtn=document.getElementById('save-settings-btn'),saveLogBtn=document.getElementById('save-log-btn'),logDurationInput=document.getElementById('log-duration'),logDescriptionInput=document.getElementById('log-description'),logRatingInput=document.getElementById('log-rating'),workLogGroup=document.getElementById('work-log-group'),isWorkLogCheckbox=document.getElementById('is-work-log'),locationStatus=document.getElementById('location-status'),filterDateStart=document.getElementById('filter-date-start'),filterDateEnd=document.getElementById('filter-date-end'),filterRating=document.getElementById('filter-rating'),filterDescription=document.getElementById('filter-description'),filterResetBtn=document.getElementById('filter-reset-btn'),logListCount=document.getElementById('log-list-count');
+    
+    // --- FUNKCIÓK ---
     function setLanguage(lang) {
-        currentLanguage = lang; localStorage.setItem('appLanguage', lang); document.documentElement.lang = lang;
-        langToggleBtn.textContent = lang === 'hu' ? 'EN' : 'HU';
-        document.querySelectorAll('[data-translate-key]').forEach(el => { const key = el.dataset.translateKey; if (translations[lang][key]) { if (el.placeholder) el.placeholder = translations[lang][key]; else el.textContent = translations[lang][key]; } });
-        if (currentUser) { authBtn.textContent = translations[lang].logout_button; userDisplay.textContent = translations[lang].welcome_message.replace('{userName}', currentUser.displayName.split(' ')[0]);
-        } else { authBtn.textContent = translations[lang].login_button; userDisplay.textContent = ''; }
-        if (mainContainer.style.display !== 'none') renderEverything();
+        currentLanguage=lang;localStorage.setItem('appLanguage',lang);document.documentElement.lang=lang;
+        langToggleBtn.textContent=lang==='hu'?'EN':'HU';
+        document.querySelectorAll('[data-translate-key]').forEach(el=>{const key=el.dataset.translateKey;if(translations[lang][key]){if(el.placeholder)el.placeholder=translations[lang][key];else el.textContent=translations[lang][key];}});
+        if(currentUser){authBtn.textContent=translations[lang].logout_button;userDisplay.textContent=translations[lang].welcome_message.replace('{userName}',currentUser.displayName.split(' ')[0]);}
+        else{authBtn.textContent=translations[lang].login_button;userDisplay.textContent='';}
+        if(mainContainer.style.display!=='none')renderEverything();
     };
 
-    async function loadUserData() { if (!currentUser) return; const dR = doc(db, 'users', currentUser.uid); try { const dS = await getDoc(dR); if (dS.exists()) { const data=dS.data(); logs=data.poopLogs||[]; settings={...{businessMode:false,hourlySalary:0},...data.settings}; if(logs.length > 0 && typeof logs[0]==='number'){ logs=logs.map(t=>({timestamp:t,duration:300,rating:3,description:translations.hu.log_description_na,isWork:false,location:null})); await saveData("MIGRACIO"); } } else { logs = []; settings={businessMode:false,hourlySalary:0}; } setLanguage(currentLanguage); } catch (e) { console.error("Adatbetöltési hiba:", e); } };
-    async function saveData(src="ismeretlen") { if (!currentUser) return; const dR=doc(db,'users',currentUser.uid); try { await setDoc(dR, {poopLogs:logs,settings}); console.log(`[${src}] Mentés OK.`); } catch (e) { console.error(`[${src}] Mentés Hiba:`, e); } };
-    function resetLogForm() { logDurationInput.value="5"; logDescriptionInput.value=""; logRatingInput.value="3"; isWorkLogCheckbox.checked=false; currentLogLocation=null; workLogGroup.style.display=settings.businessMode?'block':'none'; locationStatus.textContent=translations[currentLanguage].location_fetching; locationStatus.style.color='var(--text-secondary)'; };
-    function getCurrentLocation() { if('geolocation' in navigator) navigator.geolocation.getCurrentPosition(p=>{currentLogLocation={lat:p.coords.latitude,lng:p.coords.longitude}; locationStatus.textContent=translations[currentLanguage].location_fetching_success; locationStatus.style.color='lightgreen';}, ()=>{currentLogLocation=null; locationStatus.textContent=translations[currentLanguage].location_fetching_error; locationStatus.style.color='orange';}); else { locationStatus.textContent=translations[currentLanguage].location_fetching_unsupported; locationStatus.style.color='orange';}};
-    function renderEverything() { if (!currentUser) return; weeklyChartOffset = 0; applySettingsToUI(); renderDashboard(); renderLogListPage(); initMap(); };
-    function renderDashboard() { if(!currentUser)return;const s=calculateStats();todayCountEl.textContent=s.todayCount;weeklyTotalEl.textContent=s.thisWeekCount;dailyAvgEl.textContent=s.dailyAverage.toFixed(1);allTimeTotalEl.textContent=logs.length;workEarningsEl.textContent=`${s.workEarnings.toFixed(0)} Ft`;peakDayEl.textContent=s.peakDay.date||'-';renderChart(s.weeklyChartData);const sD=new Date(s.startOfWeek),eD=new Date(s.endOfWeek);const wTxt=weeklyChartOffset===0?translations[currentLanguage].current_week:translations[currentLanguage].week_display.replace('{start}',sD.toLocaleDateString(currentLanguage,{month:'short',day:'numeric'})).replace('{end}',eD.toLocaleDateString(currentLanguage,{month:'short',day:'numeric'}));weekDisplay.textContent=wTxt;nextWeekBtn.disabled=weeklyChartOffset>=0;};
-    function applyFilters() { const sD=filterDateStart.valueAsNumber||0, eD=filterDateEnd.valueAsNumber?new Date(filterDateEnd.value).setHours(23,59,59,999):Infinity, eR=Number(filterRating.value), sT=filterDescription.value.toLowerCase(); return logs.filter(l => { if (l.timestamp < sD || l.timestamp > eD) return false; if (eR !== 0 && (l.rating || 0) !== eR) return false; if (sT && !(l.description || '').toLowerCase().includes(sT)) return false; return true; }); };
-    function renderLogListPage() { const fL=applyFilters(); if(logListCount)logListCount.textContent=fL.length; fullLogListEl.innerHTML = fL.sort((a, b) => b.timestamp-a.timestamp).map(l => { const d = new Date(l.timestamp); let dt=`<span><i class="fas fa-clock"></i> ${(l.duration / 60).toFixed(0)}p</span> <span><i class="fas fa-star"></i> ${l.rating || translations[currentLanguage].log_description_na}</span>`; if (l.isWork) dt+=`<span><i class="fas fa-briefcase"></i> ${translations[currentLanguage].log_description_work}</span>`; if (l.description) dt+=`<br><i>${l.description}</i>`; return `<li class="log-item" id="log-${l.timestamp}"><div class="log-item-main">${d.toLocaleString(currentLanguage,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div><div class="log-item-details">${dt}</div><button class="delete-btn"data-timestamp="${l.timestamp}"><i class="fas fa-trash"></i></button></li>`; }).join(''); };
-    function calculateStats() { const wO = weeklyChartOffset; const n = new Date(); n.setDate(n.getDate()+(wO*7)); const dW = n.getDay(), df=n.getDate()-dW+(dW===0?-6:1), sW=new Date(new Date(n).setDate(df)).setHours(0,0,0,0), eW=new Date(sW).getTime()+6*864e5+86399999, wCD=Array(7).fill(0); logs.filter(l => l.timestamp >= sW && l.timestamp <= eW).forEach(l => { let dI=new Date(l.timestamp).getDay(); dI=dI===0?6:dI-1; wCD[dI]++; }); let pD={date:null, count:0}; if(logs.length > 0) { const cBD = logs.reduce((a, l) => { const d=new Date(l.timestamp).toLocaleDateString('hu-HU'); a[d]=(a[d]||0)+1; return a; }, {}); for(const d in cBD) if(cBD[d] > pD.count) pD={date:`${d} (${cBD[d]}x)`, count:cBD[d]}; } let dA=0; if (logs.length > 0) { const fLT = logs.reduce((m, l) => l.timestamp < m?l.timestamp:m, Date.now()), dSF = Math.ceil((Date.now()-fLT)/864e5)||1; dA = logs.length / dSF; } return { todayCount: logs.filter(l => l.timestamp >= new Date().setHours(0,0,0,0)).length, thisWeekCount: logs.filter(l => l.timestamp >= sW && l.timestamp <= eW).length, dailyAverage: dA, workEarnings: logs.filter(l => l.isWork && settings.hourlySalary > 0).reduce((s, l) => s + (l.duration / 3600) * settings.hourlySalary, 0), weeklyChartData: wCD, peakDay: pD, startOfWeek: sW, endOfWeek: eW }; };
-    function renderChart(d) { if(poopChart) poopChart.destroy(); poopChart = new Chart(chartCanvas, { type:'bar', data: { labels: translations[currentLanguage].chart_days, datasets: [{data:d,backgroundColor:'rgba(212,172,110,0.5)',borderColor:'rgba(212,172,110,1)',borderWidth:1,borderRadius:5}] }, options: { scales:{y:{beginAtZero:true,ticks:{stepSize:1,color:'#b0a299'}},x:{ticks:{color:'#b0a299'}}}, plugins:{legend:{display:false}}}});};
-    function initMap() { if(mapContainer&&!map){map=L.map('map-container').setView([47.4979,19.0402],7); L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy;OSM &copy;CARTO',maxZoom:20}).addTo(map);}if(map)renderAllMarkers();};
-    function renderAllMarkers() { if(!map)return; map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);}); logs.forEach(l=>{if(l.location){const d=new Date(l.timestamp),pC=`<b>${d.toLocaleString(currentLanguage,{year:'numeric',month:'short',day:'numeric'})}</b><br>${l.description || translations[currentLanguage].log_description_na}`;L.marker([l.location.lat,l.location.lng]).addTo(map).bindPopup(pC);}});};
-    function applySettingsToUI() { businessModeToggle.checked = settings.businessMode; hourlySalaryInput.value = settings.hourlySalary || ''; salaryInputGroup.style.display = settings.businessMode ? 'block' : 'none'; earningsCard.style.display = settings.businessMode ? 'grid' : 'none'; };
+    async function loadUserData(){if(!currentUser)return;const dR=doc(db,'users',currentUser.uid);try{const dS=await getDoc(dR);if(dS.exists()){const data=dS.data();logs=data.poopLogs||[];settings={...{businessMode:false,hourlySalary:0},...data.settings};if(logs.length>0&&typeof logs[0]==='number'){logs=logs.map(t=>({timestamp:t,duration:300,rating:3,description:translations.hu.log_description_na,isWork:false,location:null}));await saveData("MIGRACIO");}}else{logs=[];settings={businessMode:false,hourlySalary:0};}setLanguage(currentLanguage);}catch(e){console.error("Adatbetöltési hiba:",e);}};
+    async function saveData(src="ismeretlen"){if(!currentUser)return;const dR=doc(db,'users',currentUser.uid);try{await setDoc(dR,{poopLogs:logs,settings});console.log(`[${src}] Mentés OK.`);}catch(e){console.error(`[${src}] Mentés Hiba:`,e);}};
+    function resetLogForm(){logDurationInput.value="5";logDescriptionInput.value="";logRatingInput.value="3";isWorkLogCheckbox.checked=false;currentLogLocation=null;workLogGroup.style.display=settings.businessMode?'block':'none';locationStatus.textContent=translations[currentLanguage].location_fetching;locationStatus.style.color='var(--text-secondary)';};
+    function getCurrentLocation(){if('geolocation'in navigator)navigator.geolocation.getCurrentPosition(p=>{currentLogLocation={lat:p.coords.latitude,lng:p.coords.longitude};locationStatus.textContent=translations[currentLanguage].location_fetching_success;locationStatus.style.color='lightgreen';},()=>{currentLogLocation=null;locationStatus.textContent=translations[currentLanguage].location_fetching_error;locationStatus.style.color='orange';});else{locationStatus.textContent=translations[currentLanguage].location_fetching_unsupported;locationStatus.style.color='orange';}};
+    function renderEverything(){if(!currentUser)return;weeklyChartOffset=0;applySettingsToUI();renderDashboard();renderLogListPage();initMap();};
+    function renderDashboard(){if(!currentUser)return;const s=calculateStats();todayCountEl.textContent=s.todayCount;weeklyTotalEl.textContent=s.thisWeekCount;dailyAvgEl.textContent=s.dailyAverage.toFixed(1);allTimeTotalEl.textContent=logs.length;workEarningsEl.textContent=`${s.workEarnings.toFixed(0)} Ft`;peakDayEl.textContent=s.peakDay.date||'-';renderChart(s.weeklyChartData);const sD=new Date(s.startOfWeek),eD=new Date(s.endOfWeek);const wTxt=weeklyChartOffset===0?translations[currentLanguage].current_week:translations[currentLanguage].week_display.replace('{start}',sD.toLocaleDateString(currentLanguage,{month:'short',day:'numeric'})).replace('{end}',eD.toLocaleDateString(currentLanguage,{month:'short',day:'numeric'}));weekDisplay.textContent=wTxt;nextWeekBtn.disabled=weeklyChartOffset>=0;};
+    function applyFilters(){const sD=filterDateStart.valueAsNumber||0,eD=filterDateEnd.valueAsNumber?new Date(filterDateEnd.value).setHours(23,59,59,999):Infinity,eR=Number(filterRating.value),sT=filterDescription.value.toLowerCase();return logs.filter(l=>{if(l.timestamp<sD||l.timestamp>eD)return false;if(eR!==0&&(l.rating||0)!==eR)return false;if(sT&&!(l.description||'').toLowerCase().includes(sT))return false;return true;});};
+    function renderLogListPage(){const fL=applyFilters();if(logListCount)logListCount.textContent=fL.length;fullLogListEl.innerHTML=fL.sort((a,b)=>b.timestamp-a.timestamp).map(l=>{const d=new Date(l.timestamp);let dt=`<span><i class="fas fa-clock"></i> ${(l.duration/60).toFixed(0)}p</span> <span><i class="fas fa-star"></i> ${l.rating||translations[currentLanguage].log_description_na}</span>`;if(l.isWork)dt+=`<span><i class="fas fa-briefcase"></i> ${translations[currentLanguage].log_description_work}</span>`;if(l.description)dt+=`<br><i>${l.description}</i>`;return`<li class="log-item" id="log-${l.timestamp}"><div class="log-item-main">${d.toLocaleString(currentLanguage,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div><div class="log-item-details">${dt}</div><button class="delete-btn"data-timestamp="${l.timestamp}"><i class="fas fa-trash"></i></button></li>`;}).join('');};
+    function calculateStats(){const wO=weeklyChartOffset;const n=new Date();n.setDate(n.getDate()+(wO*7));const dW=n.getDay(),df=n.getDate()-dW+(dW===0?-6:1),sW=new Date(new Date(n).setDate(df)).setHours(0,0,0,0),eW=new Date(sW).getTime()+6*864e5+86399999,wCD=Array(7).fill(0);logs.filter(l=>l.timestamp>=sW&&l.timestamp<=eW).forEach(l=>{let dI=new Date(l.timestamp).getDay();dI=dI===0?6:dI-1;wCD[dI]++;});let pD={date:null,count:0};if(logs.length>0){const cBD=logs.reduce((a,l)=>{const d=new Date(l.timestamp).toLocaleDateString('hu-HU');a[d]=(a[d]||0)+1;return a;},{});for(const d in cBD)if(cBD[d]>pD.count)pD={date:`${d} (${cBD[d]}x)`,count:cBD[d]};}let dA=0;if(logs.length>0){const fLT=logs.reduce((m,l)=>l.timestamp<m?l.timestamp:m,Date.now()),dSF=Math.ceil((Date.now()-fLT)/864e5)||1;dA=logs.length/dSF;}return{todayCount:logs.filter(l=>l.timestamp>=new Date().setHours(0,0,0,0)).length,thisWeekCount:logs.filter(l=>l.timestamp>=sW&&l.timestamp<=eW).length,dailyAverage:dA,workEarnings:logs.filter(l=>l.isWork&&settings.hourlySalary>0).reduce((s,l)=>s+(l.duration/3600)*settings.hourlySalary,0),weeklyChartData:wCD,peakDay:pD,startOfWeek:sW,endOfWeek:eW};};
+    function renderChart(d){if(poopChart)poopChart.destroy();poopChart=new Chart(chartCanvas,{type:'bar',data:{labels:translations[currentLanguage].chart_days,datasets:[{data:d,backgroundColor:'rgba(212,172,110,0.5)',borderColor:'rgba(212,172,110,1)',borderWidth:1,borderRadius:5}]},options:{scales:{y:{beginAtZero:true,ticks:{stepSize:1,color:'#b0a299'}},x:{ticks:{color:'#b0a299'}}},plugins:{legend:{display:false}}}});};
+    function initMap(){if(mapContainer&&!map){map=L.map('map-container').setView([47.4979,19.0402],7);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy;OSM &copy;CARTO',maxZoom:20}).addTo(map);}if(map)renderAllMarkers();};
+    function renderAllMarkers(){if(!map)return;map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);});logs.forEach(l=>{if(l.location){const d=new Date(l.timestamp),pC=`<b>${d.toLocaleString(currentLanguage,{year:'numeric',month:'short',day:'numeric'})}</b><br>${l.description||translations[currentLanguage].log_description_na}`;L.marker([l.location.lat,l.location.lng]).addTo(map).bindPopup(pC);}});};
+    function applySettingsToUI(){businessModeToggle.checked=settings.businessMode;hourlySalaryInput.value=settings.hourlySalary||'';salaryInputGroup.style.display=settings.businessMode?'block':'none';earningsCard.style.display=settings.businessMode?'grid':'none';};
     
     // --- UI INICIALIZÁLÁS ---
     loader.style.display = 'none';
@@ -112,24 +85,24 @@ function initializeAppLogic(user) {
 }
 
 // === ALKALMAZÁS INDÍTÓ LOGIKÁJA ===
+let unsubscribe = null; // A figyelő leállításához
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Csak a redirect feldolgozását várjuk meg
+    // A getRedirectResult MINDIG lefut betöltéskor
     getRedirectResult(auth)
         .catch(error => {
-            // Ezt a hibát gyakran kidobja, ha nincs redirect, ami normális. A lényeg, hogy lefusson.
             console.warn("getRedirectResult hiba (ez lehet normális):", error.code);
         })
         .finally(() => {
-            // Amikor a redirect kész (akár sikerült, akár nem),
-            // elindítjuk a fő figyelőt, ami elindítja a teljes alkalmazást a VÉGLEGES felhasználói állapottal.
-            onAuthStateChanged(auth, user => {
-                // Csak egyszer inicializáljuk az alkalmazást.
-                if (!document.body.classList.contains('app-initialized')) {
-                    document.body.classList.add('app-initialized');
-                    initializeAppLogic(user);
-                }
+            // CSAK utána indítjuk el a fő figyelőt, ami PONTOSAN EGYSZER fut le
+            unsubscribe = onAuthStateChanged(auth, user => {
+                // Lefuttatjuk a teljes alkalmazás logikáját a kapott, VÉGLEGES felhasználói állapottal
+                mainAppLogic(user);
+
+                // Az első lefutás után azonnal leiratkozunk, hogy ne okozzon több galibát
+                if(unsubscribe) unsubscribe();
             }, (error) => {
                  console.error("KRITIKUS AUTH HIBA:", error);
             });
         });
-})
+});
