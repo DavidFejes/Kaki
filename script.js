@@ -28,7 +28,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
     let currentUser=null,logs=[],settings={businessMode:false,hourlySalary:0},currentLogLocation=null,weeklyChartOffset=0,map,poopChart;
 
-    const authBtn=document.getElementById('auth-btn'),userDisplay=document.getElementById('user-display'),mainContainer=document.querySelector('.container'),
+        const authBtn = document.getElementById('auth-btn');
+    const userDisplay = document.getElementById('user-display');
+    if (currentUser) {
+        authBtn.textContent = translations[lang].logout_button;
+        userDisplay.textContent = translations[lang].welcome_message.replace('{userName}', currentUser.displayName.split(' ')[0]);
+    } else {
+        // Ha nincs felhasználó, állítsuk vissza a gombot az alapértelmezett bejelentkező szövegre
+        authBtn.textContent = translations[lang].login_button;
+        userDisplay.textContent = ''; // Töröljük ki az üdvözlő szöveget
+    }
+    // --- JAVÍTÁS VÉGE ---
+
+    // Az újrarajzolást meghagyjuk, mert a grafikon címkéit és egyéb elemeket frissítenie kell
+    if(document.querySelector('.container').style.display !== 'none') {
+        renderEverything();
+    }
+}); // <-- Helyes zárójel a DOMContentLoaded végére
+
           viewSwitcher=document.querySelector('.view-switcher'),views=document.querySelectorAll('.view-content'),openLogModalBtn=document.getElementById('open-log-modal-btn'),
           todayCountEl=document.getElementById('today-count'),weeklyTotalEl=document.getElementById('weekly-total'),dailyAvgEl=document.getElementById('daily-avg'),
           allTimeTotalEl=document.getElementById('all-time-total'),earningsCard=document.getElementById('earnings-card'),workEarningsEl=document.getElementById('work-earnings'),
@@ -43,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
           filterDateEnd=document.getElementById('filter-date-end'),filterRating=document.getElementById('filter-rating'),filterDescription=document.getElementById('filter-description'),
           filterResetBtn=document.getElementById('filter-reset-btn'),logListCount=document.getElementById('log-list-count');
 
-    onAuthStateChanged(auth,u=>{if(u){currentUser=u;mainContainer.style.display='block';loadUserData();}else{currentUser=null;mainContainer.style.display='none';if(map){map.remove();map=null;}setLanguage(currentLanguage)}});
+    onAuthStateChanged(auth, u => {  currentUser = u; mainContainer.style.display = u ? 'block' : 'none'; if(map && !u) { map.remove(); map=null; } if(u) loadUserData();else setLanguage(currentLanguage); // Csak akkor hívjuk, ha kijelentkezik});
     getRedirectResult(auth).catch(e=>console.error("Visszairányítási hiba:",e.message));
     authBtn.addEventListener('click',()=>{if(currentUser)signOut(auth);else signInWithRedirect(auth,provider);});
     langToggleBtn.addEventListener('click', () => { const newLang=currentLanguage==='hu'?'en':'hu';setLanguage(newLang); });
