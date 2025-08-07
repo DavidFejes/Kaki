@@ -22,13 +22,32 @@ body {
     padding: 20px; 
 }
 
-/* === FELSŐ SÁV (BEJELENTKEZÉS ÉS BEÁLLÍTÁSOK) === */
+/* === FELSŐ SÁV (BEJELENTKEZÉS, BEÁLLÍTÁSOK, NYELV) === */
 .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.controls-container { display: flex; align-items: center; gap: 10px; } /* ÚJ KONTÉNER A GOMBOKNAK */
 .auth-container { display: flex; align-items: center; gap: 15px; }
 #auth-btn { background-color: var(--primary-color); color: var(--bg-color); font-weight: 700; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; white-space: nowrap;}
 #user-display { font-size: 0.9em; }
-#settings-btn { background: none; border: 1px solid var(--border-color); color: var(--text-secondary); font-size: 1.2em; cursor: pointer; padding: 8px 10px; border-radius: 8px; transition: color 0.2s, background-color 0.2s; }
-#settings-btn:hover { color: var(--text-primary); background-color: var(--card-bg); }
+
+/* NYELVVÁLTÓ ÉS BEÁLLÍTÁS GOMB KÖZÖS STÍLUSA */
+#settings-btn, #lang-toggle-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 9px 12px;
+    border-radius: 8px;
+    transition: color 0.2s, background-color 0.2s;
+    height: 38px; /* Egyforma magasság */
+    min-width: 45px;
+    text-align: center;
+}
+
+#settings-btn i { font-size: 1.2em; vertical-align: middle; }
+#settings-btn:hover, #lang-toggle-btn:hover { color: var(--text-primary); background-color: var(--card-bg); }
+
 
 /* === FŐ KONTÉNER === */
 .container { max-width: 800px; margin: 0 auto; }
@@ -81,7 +100,7 @@ h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-to
 .close-btn:hover { color: var(--text-primary); }
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); }
-.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-primary); }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-primary); font-size: 1em; }
 .form-group input[type="checkbox"] { width: 20px; height: 20px; vertical-align: middle; }
 #save-settings-btn, #save-log-btn { background-color: var(--primary-color); color: var(--bg-color); font-weight: bold; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; display: block; margin-left: auto; }
 
@@ -90,9 +109,7 @@ h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-to
 .leaflet-control-attribution { background-color: rgba(45,35,30,0.8) !important; color: var(--text-secondary) !important; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--bg-color); color: var(--text-primary); }
 
-/* ==========================
-   Fejlett Szűrés - Új Design
-   ========================== */
+/* === DUPLA KÁRTYÁK & SZŰRŐSÁV === */
 
 /* Dupla szélességű statisztikai kártyák PC-re */
 @media (min-width: 768px) {
@@ -101,21 +118,21 @@ h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-to
     }
 }
 
-/* Szűrősáv fő konténere - Mostantól beleolvad a környezetbe */
+/* Szűrősáv fő konténere */
 .filter-bar {
-    display: flex; /* Flexboxot használunk a jobb igazításért */
-    flex-wrap: wrap; /* Mobilon egymás alá tördel */
-    gap: 20px; /* Nagyobb térköz az elemek között */
-    align-items: flex-end; /* Minden elemet az aljára igazítunk, ettől profibb lesz */
-    background: transparent; /* Nincs háttér, hogy a fő háttér látszódjon */
-    border: 1px solid var(--border-color); /* Egy szolid keret, mint a kártyáknál */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+    background: transparent;
+    border: 1px solid var(--border-color);
     padding: 20px;
     border-radius: 12px;
     margin-bottom: 25px;
 }
 
 .filter-group {
-    flex: 1 1 180px; /* Rugalmasan növekszik, de van egy minimális szélessége */
+    flex: 1 1 180px;
     display: flex;
     flex-direction: column;
 }
@@ -128,39 +145,38 @@ h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-to
     padding-left: 2px;
 }
 
-/* Az Input mezők és a Select kinézete, hogy passzoljon a témához */
+/* Input mezők és a Select kinézete */
 .filter-group input,
 .filter-group select {
-    background-color: var(--bg-color); /* Sötét háttér */
-    color: var(--text-primary); /* Világos szöveg */
-    border: 1px solid var(--border-color); /* Finom keret */
-    border-radius: 8px; /* Lekerekítés */
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     padding: 12px;
     font-size: 0.95em;
     transition: all 0.2s ease-in-out;
 }
 
-/* Dátumválasztó ikonjának színezése sötét módra */
+/* Dátumválasztó ikonjának színezése */
 .filter-group input[type="date"] {
     color-scheme: dark;
 }
 
-/* Hover és Focus effektus az input mezőkön a jobb felhasználói élményért */
+/* Hover és Focus effektusok */
 .filter-group input:hover,
 .filter-group select:hover {
     border-color: var(--text-secondary);
 }
-
 .filter-group input:focus,
 .filter-group select:focus {
     border-color: var(--primary-color);
-    outline: none; /* A csúnya kék keretet eltüntetjük */
-    box-shadow: 0 0 10px -2px var(--primary-color); /* Helyette egy finom ragyogást kap */
+    outline: none;
+    box-shadow: 0 0 10px -2px var(--primary-color);
 }
 
-/* A "Szűrők Törlése" gomb új, szekunder stílusa */
+/* A "Szűrők Törlése" gomb */
 .filter-group #filter-reset-btn {
-    background-color: var(--card-bg); /* Sötétebb, kevésbé tolakodó */
+    background-color: var(--card-bg);
     color: var(--text-secondary);
     font-weight: bold;
     border: 1px solid var(--border-color);
@@ -169,23 +185,16 @@ h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-to
     cursor: pointer;
     text-align: center;
     transition: all 0.2s ease-in-out;
+    width: 100%;
 }
-
 .filter-group #filter-reset-btn:hover {
     background-color: var(--border-color);
     color: var(--text-primary);
 }
 
+#log-list-summary { color: var(--text-secondary); font-size: 0.9em; margin-bottom: 10px; padding-left: 5px; }
 
-/* Összegző sor a lista felett */
-#log-list-summary {
-    color: var(--text-secondary);
-    font-size: 0.9em;
-    margin-bottom: 10px;
-    padding-left: 5px;
-}
-
-/* Nyilak eltüntetése a number inputból (ezt meghagyjuk) */
+/* Nyilak eltüntetése a number inputból */
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
     -webkit-appearance: none; 
@@ -193,4 +202,4 @@ input[type=number]::-webkit-outer-spin-button {
 }
 input[type=number] {
   -moz-appearance: textfield; /* Firefox */
-}
+}s
