@@ -231,7 +231,7 @@ function getCurrentLocation() {
         );
     } else {
         locationStatus.textContent = 'Helymeghatározás nem támogatott.';
-        location-status.style.color = 'orange';
+        locationStatus.style.color = 'orange';
     }
 }
 
