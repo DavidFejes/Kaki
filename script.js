@@ -113,22 +113,53 @@ authBtn.addEventListener('click', () => {
 
 async function loadUserData() {
     if (!currentUser) return;
-    const docRef = doc(db, 'users_v2', currentUser.uid); // Új kollekció a komplexebb adatoknak
+    
+    // 1. lépés: Használd a helyes, 'users' kollekciót!
+    const docRef = doc(db, 'users', currentUser.uid); 
+    
     try {
         const docSnap = await getDoc(docRef);
+        
         if (docSnap.exists()) {
             const data = docSnap.data();
             logs = data.poopLogs || [];
             settings = { ...{ businessMode: false, hourlySalary: 0 }, ...data.settings };
+            
+            // 2. lépés: Automatikus adatmigráció!
+            // Ellenőrizzük, hogy az adatok a régi formátumban vannak-e (számok listája).
+            const needsMigration = logs.length > 0 && typeof logs[0] === 'number';
+
+            if (needsMigration) {
+                console.log("Régi adat formátum észlelve. Migráció indul...");
+                // Átalakítjuk a számok listáját objektumok listájává
+                logs = logs.map(timestamp => {
+                    return {
+                        timestamp: timestamp,
+                        duration: 300,       // Alapértelmezett érték: 5 perc
+                        rating: 3,           // Alapértelmezett érték
+                        description: "Régi adat",
+                        isWork: false,
+                        location: null
+                    };
+                });
+                // Az átalakított adatokat azonnal vissza is mentjük az adatbázisba.
+                // Erre azért van szükség, hogy ez a folyamat csak egyszer fusson le.
+                await saveData(); 
+                console.log("Migráció befejezve és az új adatok elmentve.");
+            }
+            
         } else {
+            // Ha a felhasználónak még nincs semmilyen adata
             logs = [];
             settings = { businessMode: false, hourlySalary: 0 };
         }
-        weeklyChartOffset = 0; // Reset offset on new load
+        
+        weeklyChartOffset = 0;
         renderDashboard();
         renderLogListPage();
         applySettingsToUI();
-        initMap(); // Térkép inicializálása betöltés után
+        initMap(); 
+        
     } catch (error) {
         console.error("Hiba az adatok betöltésekor: ", error);
     }
