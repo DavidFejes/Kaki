@@ -144,7 +144,7 @@ async function loadUserData() {
                 });
                 // Az átalakított adatokat azonnal vissza is mentjük az adatbázisba.
                 // Erre azért van szükség, hogy ez a folyamat csak egyszer fusson le.
-                await saveData(); 
+                await saveData("MIGRACIO"); 
                 console.log("Migráció befejezve és az új adatok elmentve.");
             }
             
@@ -525,6 +525,58 @@ async function saveData() {
         console.log("SIKERES MENTÉS! Az adatok a Firebase-ben vannak.");
     } catch (error) {
         console.error("Hiba az adatok Firebase-be való írásakor: ", error);
+    }
+}
+
+// === A KÉT LEGFONTOSABB FÜGGVÉNY A HIBAKERESÉSHEZ ===
+
+saveLogBtn.addEventListener('click', async () => {
+    console.log("%c--- ÚJ MENTÉSI FOLYAMAT INDUL ---", "color: blue; font-weight: bold;");
+    console.log("[GOMB] 1. 'Rögzítés' gomb megnyomva.");
+    
+    const newLog = {
+        timestamp: Date.now(),
+        duration: (Number(logDurationInput.value) || 5) * 60,
+        description: logDescriptionInput.value.trim(),
+        rating: Number(logRatingInput.value),
+        isWork: settings.businessMode && isWorkLogCheckbox.checked,
+        location: currentLogLocation
+    };
+    
+    console.log("[GOMB] 2. Új objektum létrehozva:", newLog);
+    logs.push(newLog);
+    console.log("[GOMB] 3. A 'logs' tömb frissítve. Új elemszám:", logs.length);
+    console.log("[GOMB] 4. A saveData() meghívása előtt...");
+
+    await saveData("GOMB_KATTINTAS"); // Küldünk egy azonosítót, hogy tudjuk, honnan jött a hívás
+
+    console.log("[GOMB] 7. A mentés utáni renderelés következik.");
+    
+    // A renderelő függvények maradnak
+    weeklyChartOffset = 0; 
+    renderDashboard();
+    renderLogListPage();
+    addMarkerToMap(newLog);
+    logEntryModal.style.display = 'none';
+});
+
+
+async function saveData(source = "ISMERETLEN") {
+    console.log(`%c[MENTÉS - ${source}] 5. A saveData() függvény elindult.`, "color: green; font-weight: bold;");
+    if (!currentUser) {
+        console.error("KRITIKUS HIBA: A mentés megszakadt, mert a currentUser null!");
+        return;
+    }
+
+    console.log(`[MENTÉS - ${source}] 6. Adatok mentése a Firestore-ba... Az 'logs' tömb elemszáma:`, logs.length);
+    
+    const docRef = doc(db, 'users', currentUser.uid); 
+    
+    try {
+        await setDoc(docRef, { poopLogs: logs, settings: settings });
+        console.log(`%c[MENTÉS - ${source}] SIKER! Adatok elmentve!`, "background: lightgreen; color: black;");
+    } catch (error) {
+        console.error(`[MENTÉS - ${source}] HIBA a setDoc során:`, error);
     }
 }
 });
