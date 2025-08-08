@@ -12,12 +12,9 @@
 </head>
 <body>
 
-    <div id="loader">
-        <h2 data-translate-key="loading">Alkalmazás betöltése...</h2>
-    </div>
-
-    <div class="top-bar" style="display: none;">
+    <div class="top-bar">
         <div class="controls-container">
+            <!-- NYELVVÁLTÓ GOMB HOZZÁADVA -->
             <button id="lang-toggle-btn">EN</button>
             <button id="settings-btn"><i class="fas fa-cog"></i></button>
         </div>
@@ -29,13 +26,17 @@
     
     <div class="container" style="display: none;">
         <h1 data-translate-key="main_title">A Kaki Napló 💩</h1>
+
         <div class="view-switcher">
             <button class="view-btn active" data-view="dashboard-view" data-translate-key="dashboard_view_btn">Irányítópult</button>
             <button class="view-btn" data-view="log-list-view" data-translate-key="log_list_view_btn">Részletes Napló</button>
-            <button class="view-btn" data-view="map-view" data-translate-key="map_view_btn">Térkép</button>
+            <button class="view-btn" data-view="map_view_btn">Térkép</button>
         </div>
+
         <div id="dashboard-view" class="view-content active">
-            <div class="log-section"><button id="open-log-modal-btn" data-translate-key="log_new_event_btn">Új Esemény Rögítése</button></div>
+            <div class="log-section">
+                <button id="open-log-modal-btn" data-translate-key="log_new_event_btn">Új Esemény Rögzítése</button>
+            </div>
             <div class="dashboard">
                 <div class="stat-card"><div class="stat-label" data-translate-key="stat_today">Mai Számláló</div><div class="stat-value" id="today-count">0</div></div>
                 <div class="stat-card"><div class="stat-label" data-translate-key="stat_weekly">Heti Összesítés</div><div class="stat-value" id="weekly-total">0</div></div>
@@ -45,10 +46,18 @@
                 <div class="stat-card double-width"><div class="stat-label" data-translate-key="stat_peak_day">Csúcs Nap</div><div class="stat-value" id="peak-day">-</div></div>
             </div>
             <div class="chart-container">
-                <div class="chart-header"><h2 data-translate-key="chart_title">Heti Aktivitás</h2><div class="chart-nav"><button id="prev-week-btn"><i class="fas fa-chevron-left"></i></button><span id="week-display"></span><button id="next-week-btn"><i class="fas fa-chevron-right"></i></button></div></div>
+                <div class="chart-header">
+                    <h2 data-translate-key="chart_title">Heti Aktivitás</h2>
+                    <div class="chart-nav">
+                        <button id="prev-week-btn"><i class="fas fa-chevron-left"></i></button>
+                        <span id="week-display"></span>
+                        <button id="next-week-btn"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
                 <canvas id="log-chart"></canvas>
             </div>
         </div>
+        
         <div id="log-list-view" class="view-content">
             <h2 data-translate-key="log_list_title">Összes bejegyzés</h2>
             <div class="filter-bar">
@@ -61,14 +70,36 @@
             <p id="log-list-summary"><span data-translate-key="filter_results">Találatok:</span> <span id="log-list-count">0</span></p>
             <ul id="full-log-list"></ul>
         </div>
-        <div id="map-view" class="view-content"><h2 data-translate-key="map_title">Események Térképe</h2><div id="map-container"></div></div>
+
+        <div id="map-view" class="view-content">
+            <h2 data-translate-key="map_title">Események Térképe</h2>
+            <div id="map-container"></div>
+        </div>
     </div>
+    
     <div id="settings-modal" class="modal">
-        <div class="modal-content"><span class="close-btn">&times;</span><h2 data-translate-key="settings_title">Beállítások</h2><div class="form-group"><label for="business-mode-toggle" data-translate-key="settings_business_mode">Munkahelyi Mód</label><input type="checkbox" id="business-mode-toggle"></div><div class="form-group" id="salary-input-group" style="display:none;"><label for="hourly-salary" data-translate-key="settings_hourly_wage">Órabéred (Ft)</label><input type="number" id="hourly-salary" data-translate-key="settings_hourly_wage_placeholder" placeholder="Pl. 3000"></div><button id="save-settings-btn" data-translate-key="save_btn">Mentés</button></div>
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 data-translate-key="settings_title">Beállítások</h2>
+            <div class="form-group"><label for="business-mode-toggle" data-translate-key="settings_business_mode">Munkahelyi Mód</label><input type="checkbox" id="business-mode-toggle"></div>
+            <div class="form-group" id="salary-input-group" style="display:none;"><label for="hourly-salary" data-translate-key="settings_hourly_wage">Órabéred (Ft)</label><input type="number" id="hourly-salary" data-translate-key="settings_hourly_wage_placeholder" placeholder="Pl. 3000"></div>
+            <button id="save-settings-btn" data-translate-key="save_btn">Mentés</button>
+        </div>
     </div>
+
     <div id="log-entry-modal" class="modal">
-        <div class="modal-content"><span class="close-btn">&times;</span><h2 data-translate-key="new_log_title">Új esemény</h2><div class="form-group"><label for="log-duration" data-translate-key="new_log_duration">Időtartam (perc)</label><input type="number" id="log-duration" value="5"></div><div class="form-group"><label for="log-description" data-translate-key="new_log_description">Leírás, jegyzetek</label><textarea id="log-description" rows="3"></textarea></div><div class="form-group"><label for="log-rating" data-translate-key="new_log_rating">Értékelés (1-5)</label><input type="range" id="log-rating" min="1" max="5" value="3"></div><div class="form-group" id="work-log-group" style="display:none;"><label for="is-work-log" data-translate-key="new_log_is_work">Munkahelyi esemény volt?</label><input type="checkbox" id="is-work-log"></div><p id="location-status" data-translate-key="location_fetching">Helyszín meghatározása...</p><button id="save-log-btn" data-translate-key="log_btn">Rögzítés</button></div>
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 data-translate-key="new_log_title">Új esemény</h2>
+            <div class="form-group"><label for="log-duration" data-translate-key="new_log_duration">Időtartam (perc)</label><input type="number" id="log-duration" value="5"></div>
+            <div class="form-group"><label for="log-description" data-translate-key="new_log_description">Leírás, jegyzetek</label><textarea id="log-description" rows="3"></textarea></div>
+            <div class="form-group"><label for="log-rating" data-translate-key="new_log_rating">Értékelés (1-5)</label><input type="range" id="log-rating" min="1" max="5" value="3"></div>
+            <div class="form-group" id="work-log-group" style="display:none;"><label for="is-work-log" data-translate-key="new_log_is_work">Munkahelyi esemény volt?</label><input type="checkbox" id="is-work-log"></div>
+            <p id="location-status" data-translate-key="location_fetching">Helyszín meghatározása...</p>
+            <button id="save-log-btn" data-translate-key="log_btn">Rögzítés</button>
+        </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="./script.js"></script>
