@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
           prevWeekBtn = document.getElementById('prev-week-btn'), nextWeekBtn = document.getElementById('next-week-btn'),
           weekDisplay = document.getElementById('week-display'), fullLogListEl = document.getElementById('full-log-list'),
           mapContainer = document.getElementById('map-container'), settingsBtn = document.getElementById('settings-btn'),
+          langToggleBtn = document.getElementById('lang-toggle-btn'),
           settingsModal = document.getElementById('settings-modal'), logEntryModal = document.getElementById('log-entry-modal'),
           closeButtons = document.querySelectorAll('.close-btn'), businessModeToggle = document.getElementById('business-mode-toggle'),
           salaryInputGroup = document.getElementById('salary-input-group'), hourlySalaryInput = document.getElementById('hourly-salary'),
@@ -48,6 +49,18 @@ document.addEventListener('DOMContentLoaded', () => {
           logDurationInput = document.getElementById('log-duration'), logDescriptionInput = document.getElementById('log-description'),
           logRatingInput = document.getElementById('log-rating'), workLogGroup = document.getElementById('work-log-group'),
           isWorkLogCheckbox = document.getElementById('is-work-log'), locationStatus = document.getElementById('location-status');
+    // === NYELV VÁLTÓ GOMB ===
+    if (langToggleBtn) {
+        langToggleBtn.addEventListener('click', () => {
+            // Itt cseréld a nyelvet, pl. localStorage, vagy egy globális változó alapján
+            // Ez csak egy példa, implementáld a saját logikád szerint!
+            const current = document.documentElement.lang || 'hu';
+            const next = current === 'hu' ? 'en' : 'hu';
+            document.documentElement.lang = next;
+            // Itt frissítsd a feliratokat, stb.
+            alert('Language switched to: ' + (next === 'hu' ? 'Magyar' : 'English'));
+        });
+    }
     
     // ÚJ: Szűrő elemek
     const filterDateStart = document.getElementById('filter-date-start'), filterDateEnd = document.getElementById('filter-date-end'),
