@@ -33,13 +33,17 @@ body {
     color: var(--text-secondary);
     font-size: 1.2em;
     cursor: pointer;
-    padding: 8px 10px;
+    padding: 8px 18px;
     border-radius: 8px;
     transition: color 0.2s, background-color 0.2s;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-right: 4px;
 }
-#settings-btn:hover, #lang-toggle-btn:hover {
+ #settings-btn:hover, #lang-toggle-btn:hover {
     color: var(--text-primary);
     background-color: var(--card-bg);
+    transform: translateY(-2px) scale(1.07);
 }
 
 /* === FŐ KONTÉNER === */

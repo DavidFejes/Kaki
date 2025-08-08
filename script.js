@@ -52,13 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // === NYELV VÁLTÓ GOMB ===
     if (langToggleBtn) {
         langToggleBtn.addEventListener('click', () => {
-            // Itt cseréld a nyelvet, pl. localStorage, vagy egy globális változó alapján
-            // Ez csak egy példa, implementáld a saját logikád szerint!
-            const current = document.documentElement.lang || 'hu';
-            const next = current === 'hu' ? 'en' : 'hu';
-            document.documentElement.lang = next;
-            // Itt frissítsd a feliratokat, stb.
-            alert('Language switched to: ' + (next === 'hu' ? 'Magyar' : 'English'));
+            // Toggle between HU and EN
+            const current = langToggleBtn.textContent.trim().toUpperCase();
+            const next = current === 'HU' ? 'EN' : 'HU';
+            langToggleBtn.textContent = next;
+            document.documentElement.lang = next.toLowerCase();
+            // Optionally: call your translation refresh logic here
         });
     }
     
