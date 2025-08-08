@@ -57,7 +57,25 @@ document.addEventListener('DOMContentLoaded', () => {
           filterResetBtn = document.getElementById('filter-reset-btn'), logListCount = document.getElementById('log-list-count');
     
     // === FŐ LOGIKA: ESEMÉNYFIGYELŐK ===
-    onAuthStateChanged(auth, u => { if (u) { currentUser=u; mainContainer.style.display='block'; authBtn.textContent='Kijelentkezés'; userDisplay.textContent=`Üdv, ${u.displayName.split(' ')[0]}!`; loadUserData(); } else { currentUser=null; mainContainer.style.display='none'; authBtn.textContent='Bejelentkezés Google-lel'; userDisplay.textContent=''; logs=[]; if (map) { map.remove(); map=null; } } });
+    onAuthStateChanged(auth, u => {
+        if (u) {
+            currentUser = u;
+            mainContainer.style.display = 'block';
+            // Always update the button text to logout in the current language
+            const btn = document.getElementById('auth-btn');
+            btn.textContent = translations?.[currentLanguage]?.logout_button || 'Kijelentkezés';
+            userDisplay.textContent = `Üdv, ${u.displayName.split(' ')[0]}!`;
+            loadUserData();
+        } else {
+            currentUser = null;
+            mainContainer.style.display = 'none';
+            const btn = document.getElementById('auth-btn');
+            btn.textContent = translations?.[currentLanguage]?.login_button || 'Bejelentkezés Google-lel';
+            userDisplay.textContent = '';
+            logs = [];
+            if (map) { map.remove(); map = null; }
+        }
+    });
     // Remove getRedirectResult, not needed for popup auth
     // Always remove previous click listeners before adding a new one
     authBtn.replaceWith(authBtn.cloneNode(true));
