@@ -91,3 +91,104 @@ h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-to
 #map-container { height: 500px; background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); z-index: 1; }
 .leaflet-control-attribution { background-color: rgba(45,35,30,0.8) !important; color: var(--text-secondary) !important; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--bg-color); color: var(--text-primary); }
+
+/* Dupla szélességű statisztikai kártyák PC-re */
+@media (min-width: 768px) {
+    .dashboard .double-width {
+        grid-column: span 2;
+    }
+}
+
+/* Szűrősáv fő konténere - Mostantól beleolvad a környezetbe */
+.filter-bar {
+    display: flex; /* Flexboxot használunk a jobb igazításért */
+    flex-wrap: wrap; /* Mobilon egymás alá tördel */
+    gap: 20px; /* Nagyobb térköz az elemek között */
+    align-items: flex-end; /* Minden elemet az aljára igazítunk, ettől profibb lesz */
+    background: transparent; /* Nincs háttér, hogy a fő háttér látszódjon */
+    border: 1px solid var(--border-color); /* Egy szolid keret, mint a kártyáknál */
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.filter-group {
+    flex: 1 1 180px; /* Rugalmasan növekszik, de van egy minimális szélessége */
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    padding-left: 2px;
+}
+
+/* Az Input mezők és a Select kinézete, hogy passzoljon a témához */
+.filter-group input,
+.filter-group select {
+    background-color: var(--bg-color); /* Sötét háttér */
+    color: var(--text-primary); /* Világos szöveg */
+    border: 1px solid var(--border-color); /* Finom keret */
+    border-radius: 8px; /* Lekerekítés */
+    padding: 12px;
+    font-size: 0.95em;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Dátumválasztó ikonjának színezése sötét módra */
+.filter-group input[type="date"] {
+    color-scheme: dark;
+}
+
+/* Hover és Focus effektus az input mezőkön a jobb felhasználói élményért */
+.filter-group input:hover,
+.filter-group select:hover {
+    border-color: var(--text-secondary);
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: var(--primary-color);
+    outline: none; /* A csúnya kék keretet eltüntetjük */
+    box-shadow: 0 0 10px -2px var(--primary-color); /* Helyette egy finom ragyogást kap */
+}
+
+/* A "Szűrők Törlése" gomb új, szekunder stílusa */
+.filter-group #filter-reset-btn {
+    background-color: var(--card-bg); /* Sötétebb, kevésbé tolakodó */
+    color: var(--text-secondary);
+    font-weight: bold;
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.filter-group #filter-reset-btn:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+
+/* Összegző sor a lista felett */
+#log-list-summary {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-bottom: 10px;
+    padding-left: 5px;
+}
+
+/* Nyilak eltüntetése a number inputból (ezt meghagyjuk) */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
+}
