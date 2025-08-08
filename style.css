@@ -27,27 +27,8 @@ body {
 .auth-container { display: flex; align-items: center; gap: 15px; }
 #auth-btn { background-color: var(--primary-color); color: var(--bg-color); font-weight: 700; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; white-space: nowrap;}
 #user-display { font-size: 0.9em; }
-#settings-btn, #lang-toggle-btn {
-    background: none;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    font-size: 1.2em;
-    cursor: pointer;
-    padding: 8px 18px;
-    border-radius: 8px;
-    transition: color 0.2s, background-color 0.2s, transform 0.2s;
-    font-weight: bold;
-    letter-spacing: 1px;
-    margin-right: 4px;
-}
-#settings-btn:last-child, #lang-toggle-btn:last-child {
-    margin-right: 0;
-}
-#settings-btn:hover, #lang-toggle-btn:hover {
-    color: var(--text-primary);
-    background-color: var(--card-bg);
-    transform: translateY(-2px) scale(1.07);
-}
+#settings-btn { background: none; border: 1px solid var(--border-color); color: var(--text-secondary); font-size: 1.2em; cursor: pointer; padding: 8px 10px; border-radius: 8px; transition: color 0.2s, background-color 0.2s; }
+#settings-btn:hover { color: var(--text-primary); background-color: var(--card-bg); }
 
 /* === FŐ KONTÉNER === */
 .container { max-width: 800px; margin: 0 auto; }
