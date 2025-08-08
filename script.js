@@ -57,7 +57,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // === FŐ LOGIKA: ESEMÉNYFIGYELŐK ===
     onAuthStateChanged(auth, u => { if (u) { currentUser=u; mainContainer.style.display='block'; authBtn.textContent='Kijelentkezés'; userDisplay.textContent=`Üdv, ${u.displayName.split(' ')[0]}!`; loadUserData(); } else { currentUser=null; mainContainer.style.display='none'; authBtn.textContent='Bejelentkezés Google-lel'; userDisplay.textContent=''; logs=[]; if (map) { map.remove(); map=null; } } });
     getRedirectResult(auth).catch(e => console.error("Visszairányítás hiba:", e.message));
-    authBtn.addEventListener('click', () => { if (currentUser) signOut(auth); else signInWithRedirect(auth, provider); });
+    // Always remove previous click listeners before adding a new one
+    authBtn.replaceWith(authBtn.cloneNode(true));
+    const newAuthBtn = document.getElementById('auth-btn');
+    newAuthBtn.addEventListener('click', () => {
+        if (currentUser) {
+            signOut(auth).then(() => {
+                // After logout, reset UI and allow login again
+                mainContainer.style.display = 'none';
+                userDisplay.textContent = '';
+                newAuthBtn.textContent = translations[currentLanguage]?.login_button || 'Bejelentkezés Google-lel';
+            });
+        } else {
+            signInWithRedirect(auth, provider);
+        }
+    });
     openLogModalBtn.addEventListener('click', () => { resetLogForm(); getCurrentLocation(); logEntryModal.style.display='block'; });
     saveLogBtn.addEventListener('click', async () => {
         const newLog = { timestamp: Date.now(), duration: (Number(logDurationInput.value)||5)*60, description: logDescriptionInput.value.trim(), rating: Number(logRatingInput.value), isWork: settings.businessMode&&isWorkLogCheckbox.checked, location: currentLogLocation };
