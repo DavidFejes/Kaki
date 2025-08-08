@@ -3,7 +3,7 @@
 // ==========================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged, signOut, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged, signOut, getRedirectResult, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
+   // Set session persistence for better compatibility (especially incognito)
+   setPersistence(auth, browserSessionPersistence).catch((e) => console.error("Persistence error:", e));
 
     let currentUser = null;
     let logs = [];
@@ -56,7 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // === FŐ LOGIKA: ESEMÉNYFIGYELŐK ===
     onAuthStateChanged(auth, u => { if (u) { currentUser=u; mainContainer.style.display='block'; authBtn.textContent='Kijelentkezés'; userDisplay.textContent=`Üdv, ${u.displayName.split(' ')[0]}!`; loadUserData(); } else { currentUser=null; mainContainer.style.display='none'; authBtn.textContent='Bejelentkezés Google-lel'; userDisplay.textContent=''; logs=[]; if (map) { map.remove(); map=null; } } });
-    getRedirectResult(auth).catch(e => console.error("Visszairányítás hiba:", e.message));
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result && result.user) {
+          // Optionally update UI or state here if needed
+          // currentUser = result.user;
+        }
+      })
+      .catch(e => console.error("Visszairányítás hiba:", e.message));
     // Always remove previous click listeners before adding a new one
     authBtn.replaceWith(authBtn.cloneNode(true));
     const newAuthBtn = document.getElementById('auth-btn');
