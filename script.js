@@ -51,15 +51,25 @@ document.addEventListener('DOMContentLoaded', () => {
           logRatingInput = document.getElementById('log-rating'), workLogGroup = document.getElementById('work-log-group'),
           isWorkLogCheckbox = document.getElementById('is-work-log'), locationStatus = document.getElementById('location-status');
 
-    // --- Auto-grow textarea for log description ---
+    // --- Auto-grow textarea for log description, only show scrollbar if max height reached ---
     if (logDescriptionInput) {
+        const MAX_HEIGHT = 300;
         logDescriptionInput.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+            const newHeight = Math.min(this.scrollHeight, MAX_HEIGHT);
+            this.style.height = newHeight + 'px';
+            // Hide overflow unless at max height
+            if (this.scrollHeight > MAX_HEIGHT) {
+                this.style.overflowY = 'auto';
+            } else {
+                this.style.overflowY = 'hidden';
+            }
         });
         // Set initial height
         logDescriptionInput.style.height = 'auto';
-        logDescriptionInput.style.height = Math.min(logDescriptionInput.scrollHeight, 300) + 'px';
+        const initialHeight = Math.min(logDescriptionInput.scrollHeight, MAX_HEIGHT);
+        logDescriptionInput.style.height = initialHeight + 'px';
+        logDescriptionInput.style.overflowY = (logDescriptionInput.scrollHeight > MAX_HEIGHT) ? 'auto' : 'hidden';
     }
     
     // ÚJ: Szűrő elemek
