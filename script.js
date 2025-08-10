@@ -60,6 +60,16 @@ document.addEventListener('DOMContentLoaded', () => {
         logRatingInput.setAttribute('step', '1');
         // Always set value to 3 on load for consistency
         logRatingInput.value = '3';
+        // Dinamikus csík: csak ez a blokk kell
+        const updateRangePercent = () => {
+            const min = Number(logRatingInput.min) || 1;
+            const max = Number(logRatingInput.max) || 5;
+            const val = Number(logRatingInput.value);
+            const percent = ((val - min) / (max - min)) * 100;
+            logRatingInput.style.setProperty('--percent', percent + '%');
+        };
+        updateRangePercent();
+        logRatingInput.addEventListener('input', updateRangePercent);
     }
 
     // --- Auto-grow textarea for log description, only show scrollbar if max height reached ---
@@ -187,6 +197,14 @@ document.addEventListener('DOMContentLoaded', () => {
         logRatingInput.setAttribute('max', '5');
         logRatingInput.setAttribute('step', '1');
         logRatingInput.value = "3";
+        // Frissítjük a csíkot is resetnél
+        if (logRatingInput) {
+            const min = Number(logRatingInput.min) || 1;
+            const max = Number(logRatingInput.max) || 5;
+            const val = Number(logRatingInput.value);
+            const percent = ((val - min) / (max - min)) * 100;
+            logRatingInput.style.setProperty('--percent', percent + '%');
+        }
         isWorkLogCheckbox.checked = false;
         currentLogLocation = null;
         workLogGroup.style.display = settings.businessMode ? 'block' : 'none';
