@@ -2,41 +2,74 @@
 // ||     A KAKI NAPLÓ v3.5 - FEJLETT SZŰRÉSSEL            ||
 // ==========================================================
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-document.addEventListener('DOMContentLoaded', () => {
-    // (VISSZAÁLLÍTVA: nincs extra JS a range sliderhez)
-    // ...existing code...
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI",
-        authDomain: "kaki-b14a4.firebaseapp.com",
-        projectId: "kaki-b14a4",
-        storageBucket: "kaki-b14a4.appspot.com",
-        messagingSenderId: "123120220357",
-        appId: "1:123120220357:web:3386a6b8ded6c4ec3798ac"
-    };
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI",
+  authDomain: "kaki-b14a4.firebaseapp.com",
+  projectId: "kaki-b14a4",
+  storageBucket: "kaki-b14a4.appspot.com",
+  messagingSenderId: "123120220357",
+  appId: "1:123120220357:web:3386a6b8ded6c4ec3798ac"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-   // Set session persistence for better compatibility (especially incognito)
-   setPersistence(auth, browserSessionPersistence).catch((e) => console.error("Persistence error:", e));
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
 
-    let currentUser = null;
-    let logs = [];
-    let settings = { businessMode: false, hourlySalary: 0 };
-    let currentLogLocation = null;
-    let weeklyChartOffset = 0;
-    let map;
-    let poopChart;
+let currentUser = null;
+let logs = [];
+let settings = { businessMode: false, hourlySalary: 0 };
+let map = null;
+let poopChart = null;
+let weeklyChartOffset = 0;
+let currentLogLocation = null;
+
+// --- Auth gomb logika ---
+const authBtn = document.getElementById('auth-btn');
+const userDisplay = document.getElementById('user-display');
+authBtn.addEventListener('click', () => {
+  if (currentUser) {
+    signOut(auth);
+  } else {
+    signInWithPopup(auth, provider).catch(e => {
+      alert('Bejelentkezési hiba: ' + (e.message || e));
+    });
+  }
+});
+
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  if (user) {
+    userDisplay.textContent = user.displayName || user.email;
+    authBtn.textContent = 'Kijelentkezés';
+    document.querySelector('.container').style.display = 'block';
+    loadUserData();
+  } else {
+    userDisplay.textContent = '';
+    authBtn.textContent = 'Bejelentkezés Google-lel';
+    document.querySelector('.container').style.display = 'none';
+    logs = [];
+    if (map) { map.remove(); map = null; }
+  }
+});
+
+// ...existing code...
 
     // === HTML ELEMEK ELÉRÉSE ===
-    const authBtn = document.getElementById('auth-btn'), userDisplay = document.getElementById('user-display'),
-          mainContainer = document.querySelector('.container'), viewSwitcher = document.querySelector('.view-switcher'),
+    // ...existing code...
+    const mainContainer = document.querySelector('.container'), viewSwitcher = document.querySelector('.view-switcher'),
           views = document.querySelectorAll('.view-content'), openLogModalBtn = document.getElementById('open-log-modal-btn'),
           todayCountEl = document.getElementById('today-count'), weeklyTotalEl = document.getElementById('weekly-total'),
           dailyAvgEl = document.getElementById('daily-avg'), allTimeTotalEl = document.getElementById('all-time-total'),
