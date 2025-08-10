@@ -57,19 +57,29 @@ document.addEventListener('DOMContentLoaded', () => {
           filterResetBtn = document.getElementById('filter-reset-btn'), logListCount = document.getElementById('log-list-count');
     
     // === FŐ LOGIKA: ESEMÉNYFIGYELŐK ===
-    onAuthStateChanged(auth, u => { if (u) { currentUser=u; mainContainer.style.display='block'; authBtn.textContent='Kijelentkezés'; userDisplay.textContent=`Üdv, ${u.displayName.split(' ')[0]}!`; loadUserData(); } else { currentUser=null; mainContainer.style.display='none'; authBtn.textContent='Bejelentkezés Google-lel'; userDisplay.textContent=''; logs=[]; if (map) { map.remove(); map=null; } } });
+    onAuthStateChanged(auth, u => {
+        currentUser = u;
+        const btn = document.getElementById('auth-btn');
+        if (u) {
+            mainContainer.style.display = 'block';
+            btn.textContent = 'Kijelentkezés';
+            userDisplay.textContent = `Üdv, ${u.displayName.split(' ')[0]}!`;
+            loadUserData();
+        } else {
+            mainContainer.style.display = 'none';
+            btn.textContent = 'Bejelentkezés Google-lel';
+            userDisplay.textContent = '';
+            logs = [];
+            if (map) { map.remove(); map = null; }
+        }
+    });
     // Remove getRedirectResult, not needed for popup auth
     // Always remove previous click listeners before adding a new one
     authBtn.replaceWith(authBtn.cloneNode(true));
     const newAuthBtn = document.getElementById('auth-btn');
     newAuthBtn.addEventListener('click', () => {
         if (currentUser) {
-            signOut(auth).then(() => {
-                // After logout, reset UI and allow login again
-                mainContainer.style.display = 'none';
-                userDisplay.textContent = '';
-                newAuthBtn.textContent = translations[currentLanguage]?.login_button || 'Bejelentkezés Google-lel';
-            });
+            signOut(auth);
         } else {
             signInWithPopup(auth, provider).catch(e => {
                 alert('Bejelentkezési hiba: ' + (e.message || e));
