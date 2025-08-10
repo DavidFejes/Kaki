@@ -86,17 +86,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
-    openLogModalBtn.addEventListener('click', () => { resetLogForm(); getCurrentLocation(); logEntryModal.style.display='block'; });
+    openLogModalBtn.addEventListener('click', () => {
+        resetLogForm();
+        getCurrentLocation();
+        logEntryModal.classList.add('show');
+    });
     saveLogBtn.addEventListener('click', async () => {
         const newLog = { timestamp: Date.now(), duration: (Number(logDurationInput.value)||5)*60, description: logDescriptionInput.value.trim(), rating: Number(logRatingInput.value), isWork: settings.businessMode&&isWorkLogCheckbox.checked, location: currentLogLocation };
-        logs.push(newLog); await saveData("GOMB_KATTINTAS"); logEntryModal.style.display='none'; renderEverything();
+        logs.push(newLog); await saveData("GOMB_KATTINTAS"); logEntryModal.classList.remove('show'); renderEverything();
     });
-    settingsBtn.addEventListener('click', () => { settingsModal.style.display='block'; });
+    settingsBtn.addEventListener('click', () => {
+        settingsModal.classList.add('show');
+    });
     businessModeToggle.addEventListener('change', () => { salaryInputGroup.style.display=businessModeToggle.checked ? 'block' : 'none'; });
-    saveSettingsBtn.addEventListener('click', async () => { settings.businessMode=businessModeToggle.checked; settings.hourlySalary=Number(hourlySalaryInput.value)||0; await saveData("BEALLITASOK_MENTESE"); settingsModal.style.display='none'; applySettingsToUI(); renderDashboard(); });
+    saveSettingsBtn.addEventListener('click', async () => {
+        settings.businessMode=businessModeToggle.checked;
+        settings.hourlySalary=Number(hourlySalaryInput.value)||0;
+        await saveData("BEALLITASOK_MENTESE");
+        settingsModal.classList.remove('show');
+        applySettingsToUI();
+        renderDashboard();
+    });
     viewSwitcher.addEventListener('click', (e) => { if (e.target.classList.contains('view-btn')) { const t=e.target.dataset.view; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); e.target.classList.add('active'); views.forEach(v=>v.classList.toggle('active', v.id===t)); if (t==='map-view' && map) setTimeout(()=>map.invalidateSize(), 10); } });
-    closeButtons.forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal').style.display='none'));
-    window.addEventListener('click', (e) => { if (e.target.classList.contains('modal')) e.target.style.display='none'; });
+    closeButtons.forEach(b => b.addEventListener('click', (e) => {
+        e.target.closest('.modal').classList.remove('show');
+    }));
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) e.target.classList.remove('show');
+    });
     fullLogListEl.addEventListener('click', async (e) => { const b=e.target.closest('.delete-btn'); if (!b) return; const t=Number(b.dataset.timestamp); logs=logs.filter(l=>l.timestamp!==t); await saveData("ELEM_TORLESE"); renderEverything(); });
     prevWeekBtn.addEventListener('click', () => { weeklyChartOffset--; renderDashboard(); });
     nextWeekBtn.addEventListener('click', () => { if(weeklyChartOffset<0){weeklyChartOffset++; renderDashboard();} });
