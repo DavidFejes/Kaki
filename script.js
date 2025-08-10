@@ -7,7 +7,23 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-    // (VISSZAÁLLÍTVA: nincs extra JS a range sliderhez)
+    // Dinamikus range slider kitöltés (csík követi a pöttyöt minden böngészőben)
+    // ---
+    function updateRangePercent() {
+        if (!logRatingInput) return;
+        const min = Number(logRatingInput.min) || 1;
+        const max = Number(logRatingInput.max) || 5;
+        const val = Number(logRatingInput.value);
+        // 0% ha min, 100% ha max
+        const percent = ((val - min) / (max - min)) * 100;
+        logRatingInput.style.setProperty('--percent', percent + '%');
+    }
+
+    // Frissítés indításkor és változáskor
+    if (logRatingInput) {
+        updateRangePercent();
+        logRatingInput.addEventListener('input', updateRangePercent);
+    }
     // ...existing code...
 
     const firebaseConfig = {
