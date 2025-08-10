@@ -7,22 +7,13 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Dinamikus range slider kitöltés (csík követi a pöttyöt minden böngészőben)
-    // ---
-    function updateRangePercent() {
-        if (!logRatingInput) return;
-        const min = Number(logRatingInput.min) || 1;
-        const max = Number(logRatingInput.max) || 5;
-        const val = Number(logRatingInput.value);
-        // 0% ha min, 100% ha max
-        const percent = ((val - min) / (max - min)) * 100;
-        logRatingInput.style.setProperty('--percent', percent + '%');
-    }
-
-    // Frissítés indításkor és változáskor
+    // --- Ensure rating slider min/max/step are correct (must be after DOM elements are defined) ---
     if (logRatingInput) {
-        updateRangePercent();
-        logRatingInput.addEventListener('input', updateRangePercent);
+        logRatingInput.setAttribute('min', '1');
+        logRatingInput.setAttribute('max', '5');
+        logRatingInput.setAttribute('step', '1');
+        // Always set value to 3 on load for consistency
+        logRatingInput.value = '3';
     }
     // ...existing code...
 
