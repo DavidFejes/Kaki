@@ -76,6 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
         logRatingInput.setAttribute('step', '1');
         // Always set value to 3 on load for consistency
         logRatingInput.value = '3';
+        // MINIMÁLIS: csík kitöltés JS (csak ez a 3 sor kell, máshoz nem nyúlunk)
+        const updateRangePercent = () => {
+            const min = Number(logRatingInput.min) || 1;
+            const max = Number(logRatingInput.max) || 5;
+            const val = Number(logRatingInput.value);
+            const percent = ((val - min) / (max - min)) * 100;
+            logRatingInput.style.setProperty('--percent', percent + '%');
+        };
+        updateRangePercent();
+        logRatingInput.addEventListener('input', updateRangePercent);
     }
 
     // --- Auto-grow textarea for log description, only show scrollbar if max height reached ---
