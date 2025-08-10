@@ -255,4 +255,4 @@ onAuthStateChanged(auth, user => {
     function renderAllMarkers(){if(!map)return;map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);});logs.forEach(l=>{if(l.location){const d=new Date(l.timestamp),pC=`<b>${d.toLocaleString('hu-HU')}</b><br>${l.description||'Nincs leírás.'}`;L.marker([l.location.lat,l.location.lng]).addTo(map).bindPopup(pC);}});}
     function applySettingsToUI(){businessModeToggle.checked=settings.businessMode;hourlySalaryInput.value=settings.hourlySalary||'';salaryInputGroup.style.display=settings.businessMode?'block':'none';earningsCard.style.display=settings.businessMode?'grid':'none';}
 
-});
+// ...existing code...
