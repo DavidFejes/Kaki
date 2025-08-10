@@ -2,37 +2,75 @@
 // ||     A KAKI NAPLÓ v3.5 - FEJLETT SZŰRÉSSEL            ||
 // ==========================================================
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+  signOut,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-document.addEventListener('DOMContentLoaded', () => {
-    // (VISSZAÁLLÍTVA: nincs extra JS a range sliderhez)
-    // ...existing code...
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI",
+  authDomain: "kaki-b14a4.firebaseapp.com",
+  projectId: "kaki-b14a4",
+  storageBucket: "kaki-b14a4.appspot.com",
+  messagingSenderId: "123120220357",
+  appId: "1:123120220357:web:3386a6b8ded6c4ec3798ac"
+};
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI",
-        authDomain: "kaki-b14a4.firebaseapp.com",
-        projectId: "kaki-b14a4",
-        storageBucket: "kaki-b14a4.appspot.com",
-        messagingSenderId: "123120220357",
-        appId: "1:123120220357:web:3386a6b8ded6c4ec3798ac"
-    };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-   // Set session persistence for better compatibility (especially incognito)
-   setPersistence(auth, browserSessionPersistence).catch((e) => console.error("Persistence error:", e));
+// --- Állandó tárolás beállítása (localStorage) ---
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log("Persistence set to localStorage");
+    // --- Bejelentkezés / kijelentkezés gomb ---
+    document.getElementById("auth-btn").addEventListener("click", () => {
+      if (auth.currentUser) {
+        signOut(auth);
+      } else {
+        signInWithRedirect(auth, provider);
+      }
+    });
+  })
+  .catch((error) => {
+    console.error("Error setting persistence:", error);
+  });
 
-    let currentUser = null;
-    let logs = [];
-    let settings = { businessMode: false, hourlySalary: 0 };
-    let currentLogLocation = null;
-    let weeklyChartOffset = 0;
-    let map;
-    let poopChart;
+// --- Felhasználó állapot kezelése ---
+auth.onAuthStateChanged(user => {
+  const authBtn = document.getElementById("auth-btn");
+  const userDisplay = document.getElementById("user-display");
+  if (user) {
+    userDisplay.textContent = user.displayName || user.email;
+    authBtn.textContent = "Kijelentkezés";
+  } else {
+    userDisplay.textContent = "";
+    authBtn.textContent = "Bejelentkezés Google-lel";
+  }
+});
+
+// --- Redirect eredmény kezelése ---
+getRedirectResult(auth)
+  .then((result) => {
+    if (result && result.user) {
+      console.log("User signed in:", result.user);
+      document.getElementById("user-display").textContent = result.user.displayName;
+    }
+  })
+  .catch((error) => {
+    console.error("Redirect sign-in error:", error);
+  });
+
+// ...existing code...
 
     // === HTML ELEMEK ELÉRÉSE ===
     const authBtn = document.getElementById('auth-btn'), userDisplay = document.getElementById('user-display'),
