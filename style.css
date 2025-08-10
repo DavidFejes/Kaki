@@ -33,7 +33,7 @@ body {
 /* === FŐ KONTÉNER === */
 .container { max-width: 800px; margin: 0 auto; }
 h1 { text-align: center; margin-bottom: 30px; font-size: 2em; }
-h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; padding-top: 20px; border: none; }
 
 /* === NÉZETVÁLTÓ FÜLEK === */
 .view-switcher { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; }
