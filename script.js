@@ -7,6 +7,12 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Ensure rating slider min/max/step are correct ---
+    if (logRatingInput) {
+        logRatingInput.setAttribute('min', '1');
+        logRatingInput.setAttribute('max', '5');
+        logRatingInput.setAttribute('step', '1');
+    }
 
     const firebaseConfig = {
         apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI",
