@@ -50,6 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
           logDurationInput = document.getElementById('log-duration'), logDescriptionInput = document.getElementById('log-description'),
           logRatingInput = document.getElementById('log-rating'), workLogGroup = document.getElementById('work-log-group'),
           isWorkLogCheckbox = document.getElementById('is-work-log'), locationStatus = document.getElementById('location-status');
+
+    // --- Auto-grow textarea for log description ---
+    if (logDescriptionInput) {
+        logDescriptionInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+        });
+        // Set initial height
+        logDescriptionInput.style.height = 'auto';
+        logDescriptionInput.style.height = Math.min(logDescriptionInput.scrollHeight, 300) + 'px';
+    }
     
     // ÚJ: Szűrő elemek
     const filterDateStart = document.getElementById('filter-date-start'), filterDateEnd = document.getElementById('filter-date-end'),
