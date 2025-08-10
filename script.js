@@ -7,6 +7,18 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Range slider fill: set --percent CSS variable dynamically so the blue bar always reaches the thumb ---
+    if (logRatingInput) {
+        const setRangePercent = () => {
+            const min = Number(logRatingInput.min || 1);
+            const max = Number(logRatingInput.max || 5);
+            const val = Number(logRatingInput.value);
+            const percent = ((val - min) / (max - min)) * 100;
+            logRatingInput.style.setProperty('--percent', percent + '%');
+        };
+        setRangePercent();
+        logRatingInput.addEventListener('input', setRangePercent);
+    }
     // ...existing code...
 
     const firebaseConfig = {
