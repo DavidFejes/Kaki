@@ -86,33 +86,52 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+    function openModal(modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeModal(modal) {
+        modal.classList.remove('show');
+        // Only re-enable scroll if no other modal is open
+        if (!document.querySelector('.modal.show')) {
+            document.body.style.overflow = '';
+        }
+    }
     openLogModalBtn.addEventListener('click', () => {
         resetLogForm();
         getCurrentLocation();
-        logEntryModal.classList.add('show');
+        openModal(logEntryModal);
     });
     saveLogBtn.addEventListener('click', async () => {
         const newLog = { timestamp: Date.now(), duration: (Number(logDurationInput.value)||5)*60, description: logDescriptionInput.value.trim(), rating: Number(logRatingInput.value), isWork: settings.businessMode&&isWorkLogCheckbox.checked, location: currentLogLocation };
-        logs.push(newLog); await saveData("GOMB_KATTINTAS"); logEntryModal.classList.remove('show'); renderEverything();
+        logs.push(newLog); await saveData("GOMB_KATTINTAS"); closeModal(logEntryModal); renderEverything();
     });
     settingsBtn.addEventListener('click', () => {
-        settingsModal.classList.add('show');
+        openModal(settingsModal);
     });
     businessModeToggle.addEventListener('change', () => { salaryInputGroup.style.display=businessModeToggle.checked ? 'block' : 'none'; });
     saveSettingsBtn.addEventListener('click', async () => {
         settings.businessMode=businessModeToggle.checked;
         settings.hourlySalary=Number(hourlySalaryInput.value)||0;
         await saveData("BEALLITASOK_MENTESE");
-        settingsModal.classList.remove('show');
+        closeModal(settingsModal);
         applySettingsToUI();
         renderDashboard();
     });
     viewSwitcher.addEventListener('click', (e) => { if (e.target.classList.contains('view-btn')) { const t=e.target.dataset.view; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); e.target.classList.add('active'); views.forEach(v=>v.classList.toggle('active', v.id===t)); if (t==='map-view' && map) setTimeout(()=>map.invalidateSize(), 10); } });
     closeButtons.forEach(b => b.addEventListener('click', (e) => {
-        e.target.closest('.modal').classList.remove('show');
+        closeModal(e.target.closest('.modal'));
     }));
     window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal')) e.target.classList.remove('show');
+        if (e.target.classList.contains('modal')) closeModal(e.target);
+    });
+
+    // ESC billentyűre zárja a modalt
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const openModalEl = document.querySelector('.modal.show');
+            if (openModalEl) closeModal(openModalEl);
+        }
     });
     fullLogListEl.addEventListener('click', async (e) => { const b=e.target.closest('.delete-btn'); if (!b) return; const t=Number(b.dataset.timestamp); logs=logs.filter(l=>l.timestamp!==t); await saveData("ELEM_TORLESE"); renderEverything(); });
     prevWeekBtn.addEventListener('click', () => { weeklyChartOffset--; renderDashboard(); });
