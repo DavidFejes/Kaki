@@ -1,3 +1,107 @@
+/* === RANGE SLIDER (Értékelés) STÍLUSOK === */
+.form-group input[type="range"] {
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  height: 28px;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  padding: 0;
+}
+
+/* Webkit (Chrome, Edge, Safari) */
+.form-group input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+.form-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1976d2;
+  border: 2px solid #1976d2;
+  margin-top: -7px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.form-group input[type="range"]:focus::-webkit-slider-thumb {
+  background: #1565c0;
+}
+.form-group input[type="range"]::-webkit-slider-thumb:active {
+  background: #0d47a1;
+}
+.form-group input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #1976d2 0%, #1976d2 calc(var(--percent, 0%) + 0.1%), #e0e0e0 calc(var(--percent, 0%) + 0.1%), #e0e0e0 100%);
+}
+
+/* Firefox */
+.form-group input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1976d2;
+  border: 2px solid #1976d2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+.form-group input[type="range"]:focus::-moz-range-thumb {
+  background: #1565c0;
+}
+.form-group input[type="range"]::-moz-range-thumb:active {
+  background: #0d47a1;
+}
+.form-group input[type="range"]::-moz-range-track {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+.form-group input[type="range"]::-moz-range-progress {
+  height: 8px;
+  background: #1976d2;
+  border-radius: 4px;
+}
+
+/* Edge/IE */
+.form-group input[type="range"]::-ms-fill-lower {
+  background: #1976d2;
+  border-radius: 4px;
+}
+.form-group input[type="range"]::-ms-fill-upper {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+.form-group input[type="range"]::-ms-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1976d2;
+  border: 2px solid #1976d2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+.form-group input[type="range"]:focus::-ms-thumb {
+  background: #1565c0;
+}
+.form-group input[type="range"]::-ms-thumb:active {
+  background: #0d47a1;
+}
+.form-group input[type="range"]::-ms-tooltip {
+  display: none;
+}
+.form-group input[type="range"] {
+  /* Remove default focus outline */
+  outline: none;
+}
+
+/* Dynamic fill for Chrome/Edge/Safari */
+.form-group input[type="range"] {
+  --percent: 50%;
+}
 /* ==========================
    KÖZPONTI VÁLTOZÓK (Meleg Barna Téma)
    ========================== */
