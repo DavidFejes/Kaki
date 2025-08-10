@@ -57,6 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
         logRatingInput.setAttribute('min', '1');
         logRatingInput.setAttribute('max', '5');
         logRatingInput.setAttribute('step', '1');
+        // Always set value to 3 on load for consistency
+        logRatingInput.value = '3';
     }
 
     // --- Auto-grow textarea for log description, only show scrollbar if max height reached ---
@@ -177,7 +179,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e){console.error("Adatbetöltési hiba:", e);}
     }
     async function saveData(source="ismeretlen") { if (!currentUser) return; const docRef=doc(db,'users',currentUser.uid); try { await setDoc(docRef, {poopLogs:logs,settings}); console.log(`[${source}] Mentés sikeres.`);} catch(e){console.error(`[${source}] Mentési hiba:`,e);}}
-    function resetLogForm() { logDurationInput.value="5"; logDescriptionInput.value=""; logRatingInput.value="3"; isWorkLogCheckbox.checked=false; currentLogLocation=null; workLogGroup.style.display=settings.businessMode?'block':'none'; locationStatus.textContent='Helyszín meghatározása...';locationStatus.style.color='var(--text-secondary)';}
+    function resetLogForm() {
+        logDurationInput.value = "5";
+        logDescriptionInput.value = "";
+        logRatingInput.setAttribute('min', '1');
+        logRatingInput.setAttribute('max', '5');
+        logRatingInput.setAttribute('step', '1');
+        logRatingInput.value = "3";
+        isWorkLogCheckbox.checked = false;
+        currentLogLocation = null;
+        workLogGroup.style.display = settings.businessMode ? 'block' : 'none';
+        locationStatus.textContent = 'Helyszín meghatározása...';
+        locationStatus.style.color = 'var(--text-secondary)';
+    }
     function getCurrentLocation() { if ('geolocation' in navigator) navigator.geolocation.getCurrentPosition(p=>{currentLogLocation={lat:p.coords.latitude,lng:p.coords.longitude};locationStatus.textContent='✅ Helyszín rögzítve!';locationStatus.style.color='lightgreen';},()=>{currentLogLocation=null;locationStatus.textContent='⚠️ Helyszín nem elérhető.';locationStatus.style.color='orange';}); else locationStatus.textContent='Helymeghatározás nem támogatott.';locationStatus.style.color='orange';}
     function renderEverything() { weeklyChartOffset=0; applySettingsToUI(); renderDashboard(); renderLogListPage(); initMap(); }
     function renderDashboard() { if(!currentUser)return;const s=calculateStats(weeklyChartOffset);todayCountEl.textContent=s.todayCount;weeklyTotalEl.textContent=s.thisWeekCount;dailyAvgEl.textContent=s.dailyAverage.toFixed(1);allTimeTotalEl.textContent=logs.length;workEarningsEl.textContent=`${s.workEarnings.toFixed(0)} Ft`;peakDayEl.textContent=s.peakDay.date||'-';renderChart(s.weeklyChartData);const sd=new Date(s.startOfWeek),ed=new Date(s.endOfWeek);weekDisplay.textContent=`${sd.toLocaleDateString('hu-HU',{month:'short',day:'numeric'})} - ${ed.toLocaleDateString('hu-HU',{month:'short',day:'numeric'})}`;nextWeekBtn.disabled=weeklyChartOffset>=0;}
