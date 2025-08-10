@@ -7,12 +7,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Ensure rating slider min/max/step are correct ---
-    if (logRatingInput) {
-        logRatingInput.setAttribute('min', '1');
-        logRatingInput.setAttribute('max', '5');
-        logRatingInput.setAttribute('step', '1');
-    }
+    // ...existing code...
 
     const firebaseConfig = {
         apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI",
@@ -56,6 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
           logDurationInput = document.getElementById('log-duration'), logDescriptionInput = document.getElementById('log-description'),
           logRatingInput = document.getElementById('log-rating'), workLogGroup = document.getElementById('work-log-group'),
           isWorkLogCheckbox = document.getElementById('is-work-log'), locationStatus = document.getElementById('location-status');
+
+    // --- Ensure rating slider min/max/step are correct (must be after DOM elements are defined) ---
+    if (logRatingInput) {
+        logRatingInput.setAttribute('min', '1');
+        logRatingInput.setAttribute('max', '5');
+        logRatingInput.setAttribute('step', '1');
+    }
 
     // --- Auto-grow textarea for log description, only show scrollbar if max height reached ---
     if (logDescriptionInput) {
