@@ -8,9 +8,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -26,7 +24,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 const db = getFirestore(app);
 
 let currentUser = null;
@@ -40,42 +39,6 @@ let currentLogLocation = null;
 // --- Auth gomb logika ---
 const authBtn = document.getElementById('auth-btn');
 const userDisplay = document.getElementById('user-display');
-
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-// Perzisztencia beállítása
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    // Most már biztonságosan indíthatod a bejelentkezést
-    console.log("Firebase Auth perzisztencia beállítva.");
-  })
-  .catch((error) => {
-    console.error("Hiba a Firebase Auth perzisztencia beállításakor:", error);
-  });
-
-export async function signInWithGooglePopup() {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    console.log("Sikeres bejelentkezés (popup):", user);
-    return user;
-  } catch (error) {
-    console.error("Hiba a Google bejelentkezés (popup) során:", error);
-    alert("Bejelentkezési hiba: " + error.message);
-    throw error;
-  }
-}
-
-// Figyeld a hitelesítési állapot változását
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("Felhasználó bejelentkezve (onAuthStateChanged):", user);
-    // Frissítsd az UI-t, vagy navigálj
-  } else {
-    console.log("Nincs bejelentkezett felhasználó.");
-  }
-});
 
 authBtn.addEventListener('click', () => {
   if (currentUser) {
