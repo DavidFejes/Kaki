@@ -1,3 +1,113 @@
+/* === RANGE SLIDER (Értékelés) STÍLUSOK === */
+.form-group input[type="range"] {
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  height: 28px;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  padding: 0;
+  border: none;
+}
+
+/* Webkit (Chrome, Edge, Safari) */
+.form-group input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  background: linear-gradient(to right, #1976d2 0%, #1976d2 var(--percent, 50%), #e0e0e0 var(--percent, 50%), #e0e0e0 100%);
+  border-radius: 4px;
+  border: none;
+}
+.form-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1976d2;
+  border: none;
+  margin-top: -7px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.form-group input[type="range"]:focus::-webkit-slider-thumb {
+  background: #1565c0;
+}
+.form-group input[type="range"]::-webkit-slider-thumb:active {
+  background: #0d47a1;
+}
+
+
+/* Firefox */
+.form-group input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1976d2;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+.form-group input[type="range"]:focus::-moz-range-thumb {
+  background: #1565c0;
+}
+.form-group input[type="range"]::-moz-range-thumb:active {
+  background: #0d47a1;
+}
+.form-group input[type="range"]::-moz-range-track {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  border: none;
+}
+.form-group input[type="range"]::-moz-range-progress {
+  height: 8px;
+  background: #1976d2;
+  border-radius: 4px;
+  border: none;
+}
+
+/* Edge/IE */
+.form-group input[type="range"]::-ms-fill-lower {
+  background: #1976d2;
+  border-radius: 4px;
+  border: none;
+}
+.form-group input[type="range"]::-ms-fill-upper {
+  background: #e0e0e0;
+  border-radius: 4px;
+  border: none;
+}
+.form-group input[type="range"]::-ms-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1976d2;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+.form-group input[type="range"]:focus::-ms-thumb {
+  background: #1565c0;
+}
+.form-group input[type="range"]::-ms-thumb:active {
+  background: #0d47a1;
+}
+.form-group input[type="range"]::-ms-tooltip {
+  display: none;
+}
+.form-group input[type="range"] {
+  /* Remove default focus outline */
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* Dynamic fill for Chrome/Edge/Safari */
+.form-group input[type="range"] {
+  --percent: 50%;
+}
 /* ==========================
    KÖZPONTI VÁLTOZÓK (Meleg Barna Téma)
    ========================== */
@@ -33,7 +143,7 @@ body {
 /* === FŐ KONTÉNER === */
 .container { max-width: 800px; margin: 0 auto; }
 h1 { text-align: center; margin-bottom: 30px; font-size: 2em; }
-h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 16px; padding-top: 8px; border: none; }
 
 /* === NÉZETVÁLTÓ FÜLEK === */
 .view-switcher { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; }
@@ -75,13 +185,45 @@ h2 { font-size: 1.2em; color: var(--text-secondary); margin-top: 40px; border-to
 .delete-btn:hover { opacity: 1; }
 
 /* === MODAL STÍLUSOK === */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); animation: fadeIn 0.3s; }
-.modal-content { background-color: var(--bg-color); margin: 15% auto; padding: 30px; border: 1px solid var(--border-color); width: 90%; max-width: 500px; border-radius: 12px; position: relative; }
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.7);
+  animation: fadeIn 0.3s;
+  justify-content: center;
+  align-items: center;
+}
+.modal.show {
+  display: flex !important;
+}
+.modal-content {
+  background-color: var(--bg-color);
+  margin: 0;
+  padding: 30px;
+  border: 1px solid var(--border-color);
+  width: 90%;
+  max-width: 500px;
+  border-radius: 12px;
+  position: relative;
+  box-sizing: border-box;
+}
 .close-btn { color: #aaa; position: absolute; top: 15px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; }
 .close-btn:hover { color: var(--text-primary); }
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); }
 .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-primary); }
+.form-group textarea {
+  resize: none;
+  min-height: 70px;
+  max-height: 300px;
+  overflow-y: auto;
+  transition: height 0.2s;
+}
 .form-group input[type="checkbox"] { width: 20px; height: 20px; vertical-align: middle; }
 #save-settings-btn, #save-log-btn { background-color: var(--primary-color); color: var(--bg-color); font-weight: bold; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; display: block; margin-left: auto; }
 

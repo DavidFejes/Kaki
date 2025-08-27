@@ -2,39 +2,74 @@
 // ||     A KAKI NAPLÓ v3.5 - FEJLETT SZŰRÉSSEL            ||
 // ==========================================================
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-document.addEventListener('DOMContentLoaded', () => {
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI",
-        authDomain: "kaki-b14a4.firebaseapp.com",
-        projectId: "kaki-b14a4",
-        storageBucket: "kaki-b14a4.appspot.com",
-        messagingSenderId: "123120220357",
-        appId: "1:123120220357:web:3386a6b8ded6c4ec3798ac"
-    };
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDDHmub6fyzV7tEZ0lyYYVHEDYGnR4xiYI",
+  authDomain: "kaki-b14a4.firebaseapp.com",
+  projectId: "kaki-b14a4",
+  storageBucket: "kaki-b14a4.appspot.com",
+  messagingSenderId: "123120220357",
+  appId: "1:123120220357:web:3386a6b8ded6c4ec3798ac"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-   // Set session persistence for better compatibility (especially incognito)
-   setPersistence(auth, browserSessionPersistence).catch((e) => console.error("Persistence error:", e));
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
 
-    let currentUser = null;
-    let logs = [];
-    let settings = { businessMode: false, hourlySalary: 0 };
-    let currentLogLocation = null;
-    let weeklyChartOffset = 0;
-    let map;
-    let poopChart;
+let currentUser = null;
+let logs = [];
+let settings = { businessMode: false, hourlySalary: 0 };
+let map = null;
+let poopChart = null;
+let weeklyChartOffset = 0;
+let currentLogLocation = null;
+
+// --- Auth gomb logika ---
+const authBtn = document.getElementById('auth-btn');
+const userDisplay = document.getElementById('user-display');
+authBtn.addEventListener('click', () => {
+  if (currentUser) {
+    signOut(auth);
+  } else {
+    signInWithPopup(auth, provider).catch(e => {
+      alert('Bejelentkezési hiba: ' + (e.message || e));
+    });
+  }
+});
+
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  if (user) {
+    userDisplay.textContent = user.displayName || user.email;
+    authBtn.textContent = 'Kijelentkezés';
+    document.querySelector('.container').style.display = 'block';
+    loadUserData();
+  } else {
+    userDisplay.textContent = '';
+    authBtn.textContent = 'Bejelentkezés Google-lel';
+    document.querySelector('.container').style.display = 'none';
+    logs = [];
+    if (map) { map.remove(); map = null; }
+  }
+});
+
+// ...existing code...
 
     // === HTML ELEMEK ELÉRÉSE ===
-    const authBtn = document.getElementById('auth-btn'), userDisplay = document.getElementById('user-display'),
-          mainContainer = document.querySelector('.container'), viewSwitcher = document.querySelector('.view-switcher'),
+    // ...existing code...
+    const mainContainer = document.querySelector('.container'), viewSwitcher = document.querySelector('.view-switcher'),
           views = document.querySelectorAll('.view-content'), openLogModalBtn = document.getElementById('open-log-modal-btn'),
           todayCountEl = document.getElementById('today-count'), weeklyTotalEl = document.getElementById('weekly-total'),
           dailyAvgEl = document.getElementById('daily-avg'), allTimeTotalEl = document.getElementById('all-time-total'),
@@ -50,6 +85,46 @@ document.addEventListener('DOMContentLoaded', () => {
           logDurationInput = document.getElementById('log-duration'), logDescriptionInput = document.getElementById('log-description'),
           logRatingInput = document.getElementById('log-rating'), workLogGroup = document.getElementById('work-log-group'),
           isWorkLogCheckbox = document.getElementById('is-work-log'), locationStatus = document.getElementById('location-status');
+
+    // --- Ensure rating slider min/max/step are correct (must be after DOM elements are defined) ---
+    if (logRatingInput) {
+        logRatingInput.setAttribute('min', '1');
+        logRatingInput.setAttribute('max', '5');
+        logRatingInput.setAttribute('step', '1');
+        // Always set value to 3 on load for consistency
+        logRatingInput.value = '3';
+        // Dinamikus csík: csak ez a blokk kell
+        const updateRangePercent = () => {
+            const min = Number(logRatingInput.min) || 1;
+            const max = Number(logRatingInput.max) || 5;
+            const val = Number(logRatingInput.value);
+            const percent = ((val - min) / (max - min)) * 100;
+            logRatingInput.style.setProperty('--percent', percent + '%');
+        };
+        updateRangePercent();
+        logRatingInput.addEventListener('input', updateRangePercent);
+    }
+
+    // --- Auto-grow textarea for log description, only show scrollbar if max height reached ---
+    if (logDescriptionInput) {
+        const MAX_HEIGHT = 300;
+        logDescriptionInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            const newHeight = Math.min(this.scrollHeight, MAX_HEIGHT);
+            this.style.height = newHeight + 'px';
+            // Hide overflow unless at max height
+            if (this.scrollHeight > MAX_HEIGHT) {
+                this.style.overflowY = 'auto';
+            } else {
+                this.style.overflowY = 'hidden';
+            }
+        });
+        // Set initial height
+        logDescriptionInput.style.height = 'auto';
+        const initialHeight = Math.min(logDescriptionInput.scrollHeight, MAX_HEIGHT);
+        logDescriptionInput.style.height = initialHeight + 'px';
+        logDescriptionInput.style.overflowY = (logDescriptionInput.scrollHeight > MAX_HEIGHT) ? 'auto' : 'hidden';
+    }
     
     // ÚJ: Szűrő elemek
     const filterDateStart = document.getElementById('filter-date-start'), filterDateEnd = document.getElementById('filter-date-end'),
@@ -57,36 +132,82 @@ document.addEventListener('DOMContentLoaded', () => {
           filterResetBtn = document.getElementById('filter-reset-btn'), logListCount = document.getElementById('log-list-count');
     
     // === FŐ LOGIKA: ESEMÉNYFIGYELŐK ===
-    onAuthStateChanged(auth, u => { if (u) { currentUser=u; mainContainer.style.display='block'; authBtn.textContent='Kijelentkezés'; userDisplay.textContent=`Üdv, ${u.displayName.split(' ')[0]}!`; loadUserData(); } else { currentUser=null; mainContainer.style.display='none'; authBtn.textContent='Bejelentkezés Google-lel'; userDisplay.textContent=''; logs=[]; if (map) { map.remove(); map=null; } } });
+    onAuthStateChanged(auth, u => {
+        currentUser = u;
+        const btn = document.getElementById('auth-btn');
+        if (u) {
+            mainContainer.style.display = 'block';
+            btn.textContent = 'Kijelentkezés';
+            userDisplay.textContent = `Üdv, ${u.displayName.split(' ')[0]}!`;
+            loadUserData();
+        } else {
+            mainContainer.style.display = 'none';
+            btn.textContent = 'Bejelentkezés Google-lel';
+            userDisplay.textContent = '';
+            logs = [];
+            if (map) { map.remove(); map = null; }
+        }
+    });
     // Remove getRedirectResult, not needed for popup auth
     // Always remove previous click listeners before adding a new one
     authBtn.replaceWith(authBtn.cloneNode(true));
     const newAuthBtn = document.getElementById('auth-btn');
     newAuthBtn.addEventListener('click', () => {
         if (currentUser) {
-            signOut(auth).then(() => {
-                // After logout, reset UI and allow login again
-                mainContainer.style.display = 'none';
-                userDisplay.textContent = '';
-                newAuthBtn.textContent = translations[currentLanguage]?.login_button || 'Bejelentkezés Google-lel';
-            });
+            signOut(auth);
         } else {
             signInWithPopup(auth, provider).catch(e => {
                 alert('Bejelentkezési hiba: ' + (e.message || e));
             });
         }
     });
-    openLogModalBtn.addEventListener('click', () => { resetLogForm(); getCurrentLocation(); logEntryModal.style.display='block'; });
+    function openModal(modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeModal(modal) {
+        modal.classList.remove('show');
+        // Only re-enable scroll if no other modal is open
+        if (!document.querySelector('.modal.show')) {
+            document.body.style.overflow = '';
+        }
+    }
+    openLogModalBtn.addEventListener('click', () => {
+        resetLogForm();
+        getCurrentLocation();
+        openModal(logEntryModal);
+    });
     saveLogBtn.addEventListener('click', async () => {
         const newLog = { timestamp: Date.now(), duration: (Number(logDurationInput.value)||5)*60, description: logDescriptionInput.value.trim(), rating: Number(logRatingInput.value), isWork: settings.businessMode&&isWorkLogCheckbox.checked, location: currentLogLocation };
-        logs.push(newLog); await saveData("GOMB_KATTINTAS"); logEntryModal.style.display='none'; renderEverything();
+        logs.push(newLog); await saveData("GOMB_KATTINTAS"); closeModal(logEntryModal); renderEverything();
     });
-    settingsBtn.addEventListener('click', () => { settingsModal.style.display='block'; });
+    settingsBtn.addEventListener('click', () => {
+        openModal(settingsModal);
+    });
     businessModeToggle.addEventListener('change', () => { salaryInputGroup.style.display=businessModeToggle.checked ? 'block' : 'none'; });
-    saveSettingsBtn.addEventListener('click', async () => { settings.businessMode=businessModeToggle.checked; settings.hourlySalary=Number(hourlySalaryInput.value)||0; await saveData("BEALLITASOK_MENTESE"); settingsModal.style.display='none'; applySettingsToUI(); renderDashboard(); });
+    saveSettingsBtn.addEventListener('click', async () => {
+        settings.businessMode=businessModeToggle.checked;
+        settings.hourlySalary=Number(hourlySalaryInput.value)||0;
+        await saveData("BEALLITASOK_MENTESE");
+        closeModal(settingsModal);
+        applySettingsToUI();
+        renderDashboard();
+    });
     viewSwitcher.addEventListener('click', (e) => { if (e.target.classList.contains('view-btn')) { const t=e.target.dataset.view; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); e.target.classList.add('active'); views.forEach(v=>v.classList.toggle('active', v.id===t)); if (t==='map-view' && map) setTimeout(()=>map.invalidateSize(), 10); } });
-    closeButtons.forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal').style.display='none'));
-    window.addEventListener('click', (e) => { if (e.target.classList.contains('modal')) e.target.style.display='none'; });
+    closeButtons.forEach(b => b.addEventListener('click', (e) => {
+        closeModal(e.target.closest('.modal'));
+    }));
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) closeModal(e.target);
+    });
+
+    // ESC billentyűre zárja a modalt
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const openModalEl = document.querySelector('.modal.show');
+            if (openModalEl) closeModal(openModalEl);
+        }
+    });
     fullLogListEl.addEventListener('click', async (e) => { const b=e.target.closest('.delete-btn'); if (!b) return; const t=Number(b.dataset.timestamp); logs=logs.filter(l=>l.timestamp!==t); await saveData("ELEM_TORLESE"); renderEverything(); });
     prevWeekBtn.addEventListener('click', () => { weeklyChartOffset--; renderDashboard(); });
     nextWeekBtn.addEventListener('click', () => { if(weeklyChartOffset<0){weeklyChartOffset++; renderDashboard();} });
@@ -102,7 +223,27 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e){console.error("Adatbetöltési hiba:", e);}
     }
     async function saveData(source="ismeretlen") { if (!currentUser) return; const docRef=doc(db,'users',currentUser.uid); try { await setDoc(docRef, {poopLogs:logs,settings}); console.log(`[${source}] Mentés sikeres.`);} catch(e){console.error(`[${source}] Mentési hiba:`,e);}}
-    function resetLogForm() { logDurationInput.value="5"; logDescriptionInput.value=""; logRatingInput.value="3"; isWorkLogCheckbox.checked=false; currentLogLocation=null; workLogGroup.style.display=settings.businessMode?'block':'none'; locationStatus.textContent='Helyszín meghatározása...';locationStatus.style.color='var(--text-secondary)';}
+    function resetLogForm() {
+        logDurationInput.value = "5";
+        logDescriptionInput.value = "";
+        logRatingInput.setAttribute('min', '1');
+        logRatingInput.setAttribute('max', '5');
+        logRatingInput.setAttribute('step', '1');
+        logRatingInput.value = "3";
+        // Frissítjük a csíkot is resetnél
+        if (logRatingInput) {
+            const min = Number(logRatingInput.min) || 1;
+            const max = Number(logRatingInput.max) || 5;
+            const val = Number(logRatingInput.value);
+            const percent = ((val - min) / (max - min)) * 100;
+            logRatingInput.style.setProperty('--percent', percent + '%');
+        }
+        isWorkLogCheckbox.checked = false;
+        currentLogLocation = null;
+        workLogGroup.style.display = settings.businessMode ? 'block' : 'none';
+        locationStatus.textContent = 'Helyszín meghatározása...';
+        locationStatus.style.color = 'var(--text-secondary)';
+    }
     function getCurrentLocation() { if ('geolocation' in navigator) navigator.geolocation.getCurrentPosition(p=>{currentLogLocation={lat:p.coords.latitude,lng:p.coords.longitude};locationStatus.textContent='✅ Helyszín rögzítve!';locationStatus.style.color='lightgreen';},()=>{currentLogLocation=null;locationStatus.textContent='⚠️ Helyszín nem elérhető.';locationStatus.style.color='orange';}); else locationStatus.textContent='Helymeghatározás nem támogatott.';locationStatus.style.color='orange';}
     function renderEverything() { weeklyChartOffset=0; applySettingsToUI(); renderDashboard(); renderLogListPage(); initMap(); }
     function renderDashboard() { if(!currentUser)return;const s=calculateStats(weeklyChartOffset);todayCountEl.textContent=s.todayCount;weeklyTotalEl.textContent=s.thisWeekCount;dailyAvgEl.textContent=s.dailyAverage.toFixed(1);allTimeTotalEl.textContent=logs.length;workEarningsEl.textContent=`${s.workEarnings.toFixed(0)} Ft`;peakDayEl.textContent=s.peakDay.date||'-';renderChart(s.weeklyChartData);const sd=new Date(s.startOfWeek),ed=new Date(s.endOfWeek);weekDisplay.textContent=`${sd.toLocaleDateString('hu-HU',{month:'short',day:'numeric'})} - ${ed.toLocaleDateString('hu-HU',{month:'short',day:'numeric'})}`;nextWeekBtn.disabled=weeklyChartOffset>=0;}
@@ -114,4 +255,4 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderAllMarkers(){if(!map)return;map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);});logs.forEach(l=>{if(l.location){const d=new Date(l.timestamp),pC=`<b>${d.toLocaleString('hu-HU')}</b><br>${l.description||'Nincs leírás.'}`;L.marker([l.location.lat,l.location.lng]).addTo(map).bindPopup(pC);}});}
     function applySettingsToUI(){businessModeToggle.checked=settings.businessMode;hourlySalaryInput.value=settings.hourlySalary||'';salaryInputGroup.style.display=settings.businessMode?'block':'none';earningsCard.style.display=settings.businessMode?'grid':'none';}
 
-});
+// ...existing code...
