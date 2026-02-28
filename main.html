@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>We moved</title>
+  <meta name="robots" content="noindex">
+</head>
+<body>
+  <div class="container">
+    <h1>Sorry — we moved</h1>
+    <p class="sub">We're no longer here. Click the button below to go to our new home.</p>
+    <button id="redirectBtn" class="huge">Redirect</button>
+  </div>
+  <script>
+    document.getElementById('redirectBtn').addEventListener('click', function(){
+  window.location.href = 'https://fejesworx.hu/poop';
+    });
+  </script>
+    <style>
+html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+.container{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+h1{font-size:clamp(2rem,6vw,4rem);margin:0 0 .5rem}
+.sub{color:#555;margin-bottom:2rem}
+button.huge{font-size:1.5rem;padding:1.25rem 2rem;border-radius:12px;border:0;background:#ff3b30;color:#fff;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.15);transition:transform .12s ease}
+button.huge:active{transform:translateY(2px)}
+    </style>
+</body>
+</html>
